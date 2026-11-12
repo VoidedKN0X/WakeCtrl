@@ -4,6 +4,13 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.1.2 (2026-11-12)
+
+### Fixed
+
+- **The screen stays on again while WakeCtrl is in the background**, also on phones like OPPO/OnePlus (ColorOS) that drop a long-held screen wake lock. WakeCtrl now takes a fresh, short screen wake lock every 10 seconds instead of holding one forever. It only renews while the screen is on and the phone is unlocked, so pressing the power button still turns the screen off.
+- **The Quick Settings tile** works with this too: turning WakeCtrl on from the tile now keeps the screen on.
+
 ## v0.1.1 (2026-11-12)
 
 ### Changed

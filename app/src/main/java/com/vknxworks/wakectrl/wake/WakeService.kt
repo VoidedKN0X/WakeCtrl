@@ -1,5 +1,6 @@
 package com.vknxworks.wakectrl.wake
 
+import android.app.KeyguardManager
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AppOpsManager
@@ -70,6 +71,7 @@ class WakeService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var holding: Method? = null
+    private var renewJob: kotlinx.coroutines.Job? = null
     private var lastNotifText: String? = null
     private var settingsReady = false
 
@@ -251,22 +253,49 @@ class WakeService : Service() {
     }
 
     private fun release(restoreBrightness: Boolean = true) {
-        wakeLock?.let { if (it.isHeld) it.release() }
+        renewJob?.cancel()
+        renewJob = null
+        wakeLock?.let { if (it.isHeld) runCatching { it.release() } }
         wakeLock = null
         if (holding != null && restoreBrightness) restoreBrightness()
         holding = null
     }
 
-    @Suppress("DEPRECATION")
-    @SuppressLint("WakelockTimeout")
+    /**
+     * Holds the screen with short, timed screen wake locks that are renewed every few seconds (a fresh lock is taken
+     * before the old one is let go). Some phones (ColorOS among them) drop a screen wake lock that a background app
+     * holds for a long time; a renewed lock keeps working there, without an overlay or changing system settings.
+     * Renewal only happens while the screen is on and the phone is unlocked, so turning the screen off yourself
+     * (power button) still works and WakeCtrl never wakes a locked phone.
+     */
     private fun acquireWakeLock(dim: Boolean) {
-        val level = if (dim) PowerManager.SCREEN_DIM_WAKE_LOCK else PowerManager.SCREEN_BRIGHT_WAKE_LOCK
-        wakeLock = getSystemService(PowerManager::class.java)
-            .newWakeLock(level or PowerManager.ON_AFTER_RELEASE, "WakeCtrl:screen")
-            .apply { setReferenceCounted(false); acquire() }
+        renewJob?.cancel()
+        takeScreenLock(dim, wake = false)
+        renewJob = scope.launch {
+            while (isActive) {
+                delay(RENEW_MS)
+                val pm = getSystemService(PowerManager::class.java)
+                val km = getSystemService(KeyguardManager::class.java)
+                if (pm.isInteractive && !km.isDeviceLocked) takeScreenLock(dim, wake = true)
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun takeScreenLock(dim: Boolean, wake: Boolean) {
+        val level = (if (dim) PowerManager.SCREEN_DIM_WAKE_LOCK else PowerManager.SCREEN_BRIGHT_WAKE_LOCK) or
+            PowerManager.ON_AFTER_RELEASE or (if (wake) PowerManager.ACQUIRE_CAUSES_WAKEUP else 0)
+        val fresh = getSystemService(PowerManager::class.java).newWakeLock(level, "WakeCtrl:screen").apply {
+            setReferenceCounted(false)
+            acquire(LOCK_MS)
+        }
+        val old = wakeLock
+        wakeLock = fresh
+        old?.let { if (it.isHeld) runCatching { it.release() } }
     }
 
     // ---------- Brightness ----------
+
 
     private fun applyBrightness(b: Brightness) {
         if (b == Brightness.UNCHANGED || !Settings.System.canWrite(this)) return
@@ -412,6 +441,10 @@ class WakeService : Service() {
     }
 
     companion object {
+        /** A fresh screen lock every 10 seconds; each one times out after 20 seconds on its own as a safety net. */
+        private const val RENEW_MS = 10_000L
+        private const val LOCK_MS = 20_000L
+
         const val ACTION_ON = "com.vknxworks.wakectrl.action.ON"
         const val ACTION_OFF = "com.vknxworks.wakectrl.action.OFF"
         const val ACTION_TOGGLE = "com.vknxworks.wakectrl.action.TOGGLE"

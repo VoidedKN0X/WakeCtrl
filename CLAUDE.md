@@ -4,7 +4,7 @@ Keep-screen-on app in the VKNXWorks Ctrl series. Kotlin, Jetpack Compose, Materi
 
 ## Layout
 
-- `wake/WakeService.kt`: foreground service (special use). Works out the reasons to hold the screen (manual + timer, AppWake, ChargeWake, BTWake, DevWake), applies the low-battery stop and its override, holds the screen with a screen wake lock (bright, or dim for "Allow dimming"); no overlay, no SYSTEM_ALERT_WINDOW, sets and restores brightness, posts the status and alert notifications. Stops itself when nothing is held and no automation is on (except after a low-battery stop, until the phone charges).
+- `wake/WakeService.kt`: foreground service (special use). Works out the reasons to hold the screen (manual + timer, AppWake, ChargeWake, BTWake, DevWake), applies the low-battery stop and its override, holds the screen with short timed screen wake locks renewed every 10 s (ACQUIRE_CAUSES_WAKEUP, only while interactive and unlocked; bright, or dim for "Allow dimming") because ColorOS drops long-held background screen locks; no overlay, no SYSTEM_ALERT_WINDOW, sets and restores brightness, posts the status and alert notifications. Stops itself when nothing is held and no automation is on (except after a low-battery stop, until the phone charges).
 - `wake/WakeState.kt`: process-wide `WakeState` flow for the UI, tile and widget; `ActivityLog` (last 300 lines in `filesDir/activity.log`).
 - `widget/Widgets.kt`: Quick Settings tile, home-screen widget, launcher shortcut activity, `AutomationReceiver` (exported; ON/OFF/TOGGLE only when "Allow other apps" is on), `BootReceiver` (boot and package replaced).
 - `ui/wake`: Wake and Automations tabs, app and device pickers. `ui/settings`: Settings and the activity log.
