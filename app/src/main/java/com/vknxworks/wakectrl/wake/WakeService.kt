@@ -68,7 +68,6 @@ class WakeService : Service() {
     private var activeSinceOnBattery = 0L
     private var reminded = false
 
-    private var overlay: View? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var holding: Method? = null
     private var lastNotifText: String? = null
@@ -240,15 +239,10 @@ class WakeService : Service() {
     // ---------- Holding the screen ----------
 
     private fun hold(s: AppSettings) {
-        val want = when {
-            s.allowDim -> Method.WAKE_LOCK_DIM
-            Settings.canDrawOverlays(this) -> Method.OVERLAY
-            else -> Method.WAKE_LOCK_BRIGHT
-        }
+        val want = if (s.allowDim) Method.WAKE_LOCK_DIM else Method.WAKE_LOCK_BRIGHT
         if (holding == want) return
         release(restoreBrightness = false)
         when (want) {
-            Method.OVERLAY -> addOverlay()
             Method.WAKE_LOCK_DIM -> acquireWakeLock(dim = true)
             Method.WAKE_LOCK_BRIGHT -> acquireWakeLock(dim = false)
         }
@@ -257,28 +251,10 @@ class WakeService : Service() {
     }
 
     private fun release(restoreBrightness: Boolean = true) {
-        overlay?.let { v -> runCatching { getSystemService(WindowManager::class.java).removeView(v) } }
-        overlay = null
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
         if (holding != null && restoreBrightness) restoreBrightness()
         holding = null
-    }
-
-    /** A 1-pixel, see-through, untouchable window with FLAG_KEEP_SCREEN_ON: the most reliable way for a normal app. */
-    private fun addOverlay() {
-        val v = View(this)
-        val params = WindowManager.LayoutParams(
-            1, 1,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.TRANSPARENT,
-        )
-        runCatching {
-            getSystemService(WindowManager::class.java).addView(v, params)
-            overlay = v
-        }.onFailure { acquireWakeLock(dim = false) }
     }
 
     @Suppress("DEPRECATION")

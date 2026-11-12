@@ -4,7 +4,7 @@ Keep-screen-on app in the VKNXWorks Ctrl series. Kotlin, Jetpack Compose, Materi
 
 ## Layout
 
-- `wake/WakeService.kt`: foreground service (special use). Works out the reasons to hold the screen (manual + timer, AppWake, ChargeWake, BTWake, DevWake), applies the low-battery stop and its override, holds the screen (1-pixel overlay with FLAG_KEEP_SCREEN_ON, else a screen wake lock; dim wake lock for "Allow dimming"), sets and restores brightness, posts the status and alert notifications. Stops itself when nothing is held and no automation is on (except after a low-battery stop, until the phone charges).
+- `wake/WakeService.kt`: foreground service (special use). Works out the reasons to hold the screen (manual + timer, AppWake, ChargeWake, BTWake, DevWake), applies the low-battery stop and its override, holds the screen with a screen wake lock (bright, or dim for "Allow dimming"); no overlay, no SYSTEM_ALERT_WINDOW, sets and restores brightness, posts the status and alert notifications. Stops itself when nothing is held and no automation is on (except after a low-battery stop, until the phone charges).
 - `wake/WakeState.kt`: process-wide `WakeState` flow for the UI, tile and widget; `ActivityLog` (last 300 lines in `filesDir/activity.log`).
 - `widget/Widgets.kt`: Quick Settings tile, home-screen widget, launcher shortcut activity, `AutomationReceiver` (exported; ON/OFF/TOGGLE only when "Allow other apps" is on), `BootReceiver` (boot and package replaced).
 - `ui/wake`: Wake and Automations tabs, app and device pickers. `ui/settings`: Settings and the activity log.
@@ -17,7 +17,7 @@ Keep-screen-on app in the VKNXWorks Ctrl series. Kotlin, Jetpack Compose, Materi
 - arm64-v8a only. Every user-facing string goes in `strings.xml` (shared Ctrl strings in `strings_ctrl.xml`).
 - Settings open only from the profile picture. No settings tab, menu or gear icon, no You tab.
 - Must work as a normal user app on any ROM (Android 15+), not only when built into the system.
-- The overlay is 1×1, transparent, not focusable and not touchable; never draw or read anything with it.
+- No overlay windows and no `SYSTEM_ALERT_WINDOW`: the screen is held with a wake lock only (removed in 0.1.1 on request).
 - Usage access is only for the foreground package name while the screen is on; never store it beyond the activity log.
 - Other apps can only control WakeCtrl through `AutomationReceiver`, and only when the user allowed it.
 

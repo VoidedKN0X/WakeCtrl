@@ -19,7 +19,7 @@ data class WakeStatus(
     val reasons: Set<Reason> = emptySet(),
     /** Wall-clock time a manual keep-awake ends, or 0 for no limit. */
     val manualUntil: Long = 0L,
-    /** How the screen is held: overlay (most reliable) or a wake lock. */
+    /** How the screen is held: a bright screen wake lock, or a dim one for "Allow dimming". */
     val method: Method? = null,
     /** Stood down because the battery got low; automations wait until the phone charges. */
     val stoodDown: Boolean = false,
@@ -30,7 +30,7 @@ data class WakeStatus(
     val manual: Boolean get() = Reason.MANUAL in reasons
 }
 
-enum class Method { OVERLAY, WAKE_LOCK_BRIGHT, WAKE_LOCK_DIM }
+enum class Method { WAKE_LOCK_BRIGHT, WAKE_LOCK_DIM }
 
 /** Process-wide state shared by the service, the tile, the widget and the UI. */
 object WakeState {
