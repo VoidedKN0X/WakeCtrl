@@ -31,9 +31,7 @@
     <string name="timer_30">30 minutes</string>
     <string name="timer_60">1 hour</string>
     <string name="timer_120">2 hours</string>
-    <string name="warn_overlay">Tap to allow \"Display over other apps\". It\'s the most reliable way to keep the screen on; without it WakeCtrl falls back to a wake lock, which some phones ignore.</string>
     <string name="warn_battery">Tap to set battery use to Unrestricted, so Android doesn\'t stop WakeCtrl in the background.</string>
-    <string name="method_overlay">OVERLAY</string>
     <string name="method_wake_lock">WAKE LOCK</string>
     <string name="method_dim">DIMMED</string>
     <string name="reason_manual">turned on by you</string>
@@ -79,7 +77,7 @@
 
     <!-- Settings -->
     <string name="group_screen">Screen</string>
-    <string name="screen_footer">The brightness is restored when WakeCtrl lets go. \"Allow dimming\" uses a wake lock instead of the overlay.</string>
+    <string name="screen_footer">The brightness is restored when WakeCtrl lets go. \"Allow dimming\" lets the screen dim while it stays on.</string>
     <string name="brightness">Brightness while on</string>
     <string name="brightness_unchanged">Leave as it is</string>
     <string name="brightness_low">Low</string>
@@ -102,8 +100,6 @@
     <string name="resume_restart_sub">If you had it on when the phone restarted, turn it back on</string>
     <string name="group_reliability">Reliability</string>
     <string name="reliability_footer">Some phones (including OPPO and OnePlus) stop apps in the background. These two settings keep WakeCtrl working.</string>
-    <string name="reliability_overlay">Display over other apps</string>
-    <string name="reliability_overlay_sub">Not allowed: tap to allow</string>
     <string name="reliability_battery">Unrestricted battery use</string>
     <string name="reliability_battery_sub">Restricted: tap to allow</string>
     <string name="status_allowed">Allowed</string>

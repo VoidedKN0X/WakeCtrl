@@ -13,7 +13,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- "Display over other apps": a 1-pixel invisible window that keeps the screen on (the most reliable way). -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Optional brightness while on (Android's "Modify system settings"; you allow it yourself). -->
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"

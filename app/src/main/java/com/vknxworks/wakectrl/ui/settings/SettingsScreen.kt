@@ -112,16 +112,7 @@ fun SettingsScreen() {
                 GroupSwitch(stringResource(R.string.resume_restart), stringResource(R.string.resume_restart_sub), settings.resumeAfterRestart, Icons.Outlined.RestartAlt) { on -> set { it.copy(resumeAfterRestart = on) } }
             }
             Group(stringResource(R.string.group_reliability), footer = stringResource(R.string.reliability_footer)) {
-                val overlayOk = remember(tick) { Settings.canDrawOverlays(context) }
                 val batteryOk = remember(tick) { context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName) }
-                GroupRow(
-                    stringResource(R.string.reliability_overlay),
-                    stringResource(if (overlayOk) R.string.status_allowed else R.string.reliability_overlay_sub),
-                    icon = Icons.Outlined.Layers,
-                    iconTint = if (overlayOk) CtrlColors.Text else CtrlColors.Warning,
-                    showChevron = true,
-                    onClick = { openSystemPage(context, Settings.ACTION_MANAGE_OVERLAY_PERMISSION) },
-                )
                 GroupRow(
                     stringResource(R.string.reliability_battery),
                     stringResource(if (batteryOk) R.string.status_allowed else R.string.reliability_battery_sub),

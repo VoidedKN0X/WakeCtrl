@@ -25,7 +25,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Everywhere you need it:** a Quick Settings tile, a home-screen widget, a launcher shortcut, and an on/off button in the notification
 - **Works with automation apps:** Tasker, Home Assistant, MacroDroid and others can turn it on, off or toggle it with a broadcast, only if you allow it (off by default)
 - **Activity log:** what WakeCtrl did and why, kept on the phone
-- **Reliable on strict phones:** holds the screen with a 1-pixel invisible window (the most reliable way for a normal app), falling back to a wake lock. Settings shows what still needs allowing
+- **Keeps the screen on with a screen wake lock**, like Wakey: no overlay and no "Display over other apps" permission. Settings shows what still helps on strict phones
 - **App lock** with its own PIN and optional fingerprint unlock, and **Hide in screenshots** / **Hide in recent apps** (all off until you turn them on)
 - **Ctrl / Signal look**, shared by every Ctrl app: dark and light, following your phone's dark theme setting, high contrast, one violet accent, Space Grotesk and JetBrains Mono; landscape, tablet and foldable layouts
 
@@ -47,7 +47,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
 - **Automations:** switch on AppWake, ChargeWake, BTWake or DevWake, then choose the apps or devices. AppWake and DevWake ask you to allow Usage access in Android's settings.
-- **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Display over other apps** and **Unrestricted battery use**. WakeCtrl shows a card when one is missing; Settings shows both.
+- **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
 - **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile. Long-press the home screen to add the widget, or long-press WakeCtrl's icon for the shortcut.
 - **Settings** (profile picture): brightness, dimming, low battery, reminder, resume after restart, other apps, activity log and privacy.
 
@@ -73,7 +73,6 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 | Permission | What WakeCtrl uses it for |
 | --- | --- |
-| Display over other apps (*you allow it*) | A 1-pixel, invisible, untouchable window that keeps the screen on. The most reliable method; nothing is drawn or read. |
 | Keep the device awake | The fallback method, and "Allow dimming". |
 | Foreground service (special use), notifications | Running while it holds the screen or watches your automations, with the status notification and its on/off button. |
 | Usage access (*you allow it*) | AppWake and DevWake: which app is on screen. Only the app's name, only while the screen is on, never stored or sent. |

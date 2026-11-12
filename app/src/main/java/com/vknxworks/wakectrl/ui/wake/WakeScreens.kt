@@ -184,15 +184,7 @@ fun WakeScreen() {
 
         // What helps WakeCtrl hold the screen reliably.
         key(tick) {
-            val overlayOk = Settings.canDrawOverlays(context)
             val batteryOk = context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
-            if (!overlayOk && !settings.allowDim) {
-                WarningCard(
-                    stringResource(R.string.warn_overlay),
-                    Icons.Outlined.Layers,
-                    Modifier.padding(horizontal = Gutter, vertical = 6.dp).clickable { openSystemPage(context, Settings.ACTION_MANAGE_OVERLAY_PERMISSION) },
-                )
-            }
             if (!batteryOk && (settings.anyAutomation || status.active)) {
                 WarningCard(
                     stringResource(R.string.warn_battery),
@@ -209,7 +201,6 @@ fun WakeScreen() {
 private fun key(tick: Int, content: @Composable () -> Unit) = androidx.compose.runtime.key(tick) { content() }
 
 private fun methodLabel(m: Method) = when (m) {
-    Method.OVERLAY -> R.string.method_overlay
     Method.WAKE_LOCK_BRIGHT -> R.string.method_wake_lock
     Method.WAKE_LOCK_DIM -> R.string.method_dim
 }
