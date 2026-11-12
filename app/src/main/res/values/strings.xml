@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shell texts for this app -->
+    <string name="settings_subtitle">Screen, safety, reliability and privacy</string>
+    <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) when opening WakeCtrl. Keeping the screen on carries on while it\'s locked.</string>
+    <string name="app_lock_footer">WakeCtrl works fully offline: it has no internet permission, analytics or tracking. Your settings and activity log stay on this phone.</string>
+    <string name="lock_prompt_subtitle">Your screen settings</string>
+    <string name="lock_forgot_body">The PIN can\'t be recovered. WakeCtrl will reset its settings and automations, clear the activity log and turn the app lock off.</string>
+
+    <!-- Tabs -->
+    <string name="tab_wake">Wake</string>
+    <string name="tab_automations">Automations</string>
+
+    <!-- Wake -->
+    <string name="hero_label">SCREEN</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="detail_off">The screen turns off as usual. Tap to keep it on.</string>
+    <string name="detail_watching">Off. Watching for your automations.</string>
+    <string name="detail_left">Kept on · %1$s left</string>
+    <string name="detail_because">Kept on: %1$s</string>
+    <string name="detail_stood_down">Stopped at low battery. Automations resume once the phone charges.</string>
+    <string name="turn_on">Keep screen on</string>
+    <string name="turn_off">Let it sleep</string>
+    <string name="group_timer">Timer</string>
+    <string name="timer">Keep on for</string>
+    <string name="timer_footer">Applies when you turn it on yourself (here, the tile, widget or shortcut). Automations keep the screen on for as long as they match.</string>
+    <string name="timer_none">No limit</string>
+    <string name="timer_5">5 minutes</string>
+    <string name="timer_15">15 minutes</string>
+    <string name="timer_30">30 minutes</string>
+    <string name="timer_60">1 hour</string>
+    <string name="timer_120">2 hours</string>
+    <string name="warn_overlay">Tap to allow \"Display over other apps\". It\'s the most reliable way to keep the screen on; without it WakeCtrl falls back to a wake lock, which some phones ignore.</string>
+    <string name="warn_battery">Tap to set battery use to Unrestricted, so Android doesn\'t stop WakeCtrl in the background.</string>
+    <string name="method_overlay">OVERLAY</string>
+    <string name="method_wake_lock">WAKE LOCK</string>
+    <string name="method_dim">DIMMED</string>
+    <string name="reason_manual">turned on by you</string>
+    <string name="reason_app">app on screen</string>
+    <string name="reason_charging">charging</string>
+    <string name="reason_bluetooth">Bluetooth device</string>
+    <string name="reason_debug">debug build on screen</string>
+
+    <!-- Automations -->
+    <string name="app_wake">AppWake</string>
+    <string name="app_wake_switch">While using selected apps</string>
+    <string name="app_wake_sub">Reading, recipes, maps, presentations…</string>
+    <string name="app_wake_footer">WakeCtrl checks which app is on screen with Android\'s Usage access. It only reads the app name, on this phone, and only while the screen is on.</string>
+    <string name="choose_apps">Choose apps</string>
+    <string name="search_apps">Search apps</string>
+    <string name="loading_apps">Loading apps…</string>
+    <string name="charge_wake">ChargeWake</string>
+    <string name="charge_wake_switch">While the phone is charging</string>
+    <string name="charge_wake_footer">Handy on a dock, a car mount or a nightstand.</string>
+    <string name="bt_wake">BTWake</string>
+    <string name="bt_wake_switch">While a chosen Bluetooth device is connected</string>
+    <string name="bt_wake_footer">For example your car or a speaker. Needs the Nearby devices permission; WakeCtrl only looks at devices you\'ve already paired.</string>
+    <string name="choose_devices">Choose devices</string>
+    <string name="no_devices">No paired devices</string>
+    <string name="no_devices_body">Devices you pair in Android\'s Bluetooth settings show up here.</string>
+    <string name="open_bt_settings">Open Bluetooth settings</string>
+    <string name="dev_wake">DevWake</string>
+    <string name="dev_wake_switch">While a debug build is on screen</string>
+    <string name="dev_wake_footer">Keeps the screen on while you test apps you\'re developing (any app marked debuggable). Uses Usage access, like AppWake.</string>
+    <string name="allow_usage">Allow Usage access</string>
+    <string name="allow_usage_sub">Needed to see which app is on screen. Find WakeCtrl in the list and switch it on.</string>
+    <string name="allow_notifications">Allow notifications</string>
+    <string name="allow_notifications_sub">Optional: shows when WakeCtrl holds the screen, with a quick on/off button</string>
+
+    <plurals name="apps_selected">
+        <item quantity="one">%1$d app selected</item>
+        <item quantity="other">%1$d apps selected</item>
+    </plurals>
+    <plurals name="devices_selected">
+        <item quantity="one">%1$d device selected</item>
+        <item quantity="other">%1$d devices selected</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="group_screen">Screen</string>
+    <string name="screen_footer">The brightness is restored when WakeCtrl lets go. \"Allow dimming\" uses a wake lock instead of the overlay.</string>
+    <string name="brightness">Brightness while on</string>
+    <string name="brightness_unchanged">Leave as it is</string>
+    <string name="brightness_low">Low</string>
+    <string name="brightness_medium">Medium</string>
+    <string name="brightness_high">Full</string>
+    <string name="allow_brightness">Allow changing brightness</string>
+    <string name="allow_brightness_sub">Android\'s \"Modify system settings\" for WakeCtrl</string>
+    <string name="allow_dim">Allow dimming when idle</string>
+    <string name="allow_dim_sub">The screen dims after a while but doesn\'t turn off</string>
+    <string name="group_safety">Battery</string>
+    <string name="low_battery">Stop at low battery</string>
+    <string name="low_battery_off">Never</string>
+    <string name="low_battery_10">At 10%</string>
+    <string name="low_battery_15">At 15%</string>
+    <string name="low_battery_20">At 20%</string>
+    <string name="low_battery_30">At 30%</string>
+    <string name="long_reminder">Long-session reminder</string>
+    <string name="long_reminder_sub">Notify after 3 hours of keeping the screen on while on battery</string>
+    <string name="resume_restart">Resume after a restart</string>
+    <string name="resume_restart_sub">If you had it on when the phone restarted, turn it back on</string>
+    <string name="group_reliability">Reliability</string>
+    <string name="reliability_footer">Some phones (including OPPO and OnePlus) stop apps in the background. These two settings keep WakeCtrl working.</string>
+    <string name="reliability_overlay">Display over other apps</string>
+    <string name="reliability_overlay_sub">Not allowed: tap to allow</string>
+    <string name="reliability_battery">Unrestricted battery use</string>
+    <string name="reliability_battery_sub">Restricted: tap to allow</string>
+    <string name="status_allowed">Allowed</string>
+    <string name="group_automation">Other apps</string>
+    <string name="allow_automation">Allow other apps to control WakeCtrl</string>
+    <string name="allow_automation_sub">For Tasker, Home Assistant, MacroDroid…</string>
+    <string name="automation_footer">Send a broadcast to com.vknxworks.wakectrl with action com.vknxworks.wakectrl.action.ON, OFF or TOGGLE. While this is off, those requests are ignored and noted in the activity log.</string>
+    <string name="activity_log">Activity log</string>
+    <string name="activity_log_sub">What WakeCtrl did and why, kept on this phone</string>
+    <string name="log_empty">Nothing yet</string>
+    <string name="log_empty_body">Each time WakeCtrl keeps the screen on or lets go, it\'s noted here.</string>
+
+    <!-- Notifications -->
+    <string name="ch_status">Status</string>
+    <string name="ch_status_desc">Shows while WakeCtrl keeps the screen on or watches for automations</string>
+    <string name="ch_alerts">Alerts</string>
+    <string name="ch_alerts_desc">Low battery and long-session reminders</string>
+    <string name="notif_title_on">Keeping the screen on</string>
+    <string name="notif_title_watching">Watching for automations</string>
+    <string name="notif_starting">Starting…</string>
+    <string name="notif_watching">The screen turns off as usual until an automation matches</string>
+    <string name="notif_on_until">Until %1$s</string>
+    <string name="notif_on_because">Because: %1$s</string>
+    <string name="notif_stood_down">Stopped at low battery until the phone charges</string>
+    <string name="alert_low_battery_title">WakeCtrl stopped at low battery</string>
+    <string name="alert_low_battery_body">The battery fell to %1$d%%, so the screen can turn off again. Automations resume once the phone charges.</string>
+    <string name="alert_long_title">The screen has been on for 3 hours</string>
+    <string name="alert_long_body">WakeCtrl has kept the screen on for over 3 hours on battery. Turn it off when you don\'t need it.</string>
+
+    <!-- Activity log lines -->
+    <string name="log_manual_on">Turned on (%1$s)</string>
+    <string name="log_manual_off">Turned off (%1$s)</string>
+    <string name="log_auto_on">Kept on: %1$s</string>
+    <string name="log_released">Let the screen sleep again</string>
+    <string name="log_timer_done">Timer finished</string>
+    <string name="log_low_battery">Stopped at %1$d%% battery</string>
+    <string name="log_automation_blocked">Ignored a request from another app (\"Allow other apps\" is off)</string>
+    <string name="log_source_app">app</string>
+    <string name="log_source_notification">notification</string>
+    <string name="log_source_tile">Quick Settings tile</string>
+    <string name="log_source_widget">widget</string>
+    <string name="log_source_shortcut">shortcut</string>
+    <string name="log_source_automation">another app</string>
+    <string name="log_source_restart">after restart</string>
+
+    <!-- Tile, widget, shortcut -->
+    <string name="tile_on">On</string>
+    <string name="tile_off">Off</string>
+    <string name="start_blocked">Android didn\'t let WakeCtrl start from here. Open WakeCtrl once, then try again.</string>
+    <string name="widget_description">Keep the screen on with one tap</string>
+    <string name="shortcut_toggle_short">Toggle</string>
+    <string name="shortcut_toggle_long">Turn keep screen on on or off</string>
+</resources>
