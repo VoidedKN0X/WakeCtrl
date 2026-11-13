@@ -18,6 +18,10 @@ A security update for automation apps, and a little less work for your phone.
 
 - The activity log is saved in the background instead of on the main thread.
 
+### Fixed
+
+- **The Quick Settings tile updates as soon as you tap it.** Before, it kept showing the old state until you closed and reopened the Quick Settings panel. While the panel is open, the tile now also follows changes from the app, the notification, the widget or an automation.
+
 ## v0.1.2 (2026-11-12)
 
 ### Fixed
