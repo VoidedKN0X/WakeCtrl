@@ -15,7 +15,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Works fully offline.** WakeCtrl doesn't have the internet permission and never goes online. No ads, no account, no in-app purchases
 - **Keep the screen on** with one tap, until you turn it off or for 5, 15 or 30 minutes, 1 or 2 hours, with a live countdown
 - **Automations**, each switched on separately:
-  - **AppWake:** while apps you choose are on screen (reading, recipes, maps, presentations)
+  - **AppWake:** while apps you choose are on screen (reading, recipes, maps, presentations), each optionally **only while the phone is charging** (a navigation app on the car charger)
   - **ChargeWake:** while the phone is charging
   - **BTWake:** while a paired Bluetooth device you choose is connected (your car, a speaker)
   - **ScheduleWake:** during set hours, for example weekdays 08:00–17:30, with windows that can run past midnight
@@ -23,7 +23,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Screen:** set the brightness while it's on (restored afterwards), or let the screen dim when idle instead of staying bright
 - **Battery care:** stop at a low battery level you pick (10 to 30%), and a reminder after 3 hours on battery. Turn it on again after a low-battery stop to override it until you charge
 - **Resume after a restart** if you had it on when the phone went down
-- **Everywhere you need it:** a Quick Settings tile, a home-screen widget, a launcher shortcut, and an on/off button in the notification
+- **Everywhere you need it:** a Quick Settings tile, a home-screen widget that shows why the screen is on and the minutes left on the timer or schedule, a launcher shortcut, and an on/off button in the notification
 - **Works with automation apps:** Tasker, Home Assistant, MacroDroid and others can turn it on, off or toggle it with a broadcast, only if you allow it (off by default)
 - **Activity log:** what WakeCtrl did and why, kept on the phone
 - **Keeps the screen on with a renewed screen wake lock** (a fresh short lock every 10 seconds, only while the screen is on and the phone unlocked): it works on strict phones like ColorOS, with no overlay and no "Display over other apps" permission. Settings shows what still helps on strict phones

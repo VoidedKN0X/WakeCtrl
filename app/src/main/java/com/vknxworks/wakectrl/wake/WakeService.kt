@@ -206,7 +206,8 @@ class WakeService : Service() {
         ScheduleAlarm.update(this, s, zNow)
         val fg = foregroundPkg.takeIf { interactive }
         if (fg != null && fg != packageName) {
-            if (s.appWake && fg in s.appWakePackages) { reasons += Reason.APP; trigger = fg }
+            // Apps set to "Only while charging" count only while the phone charges (a plug change re-evaluates).
+            if (AppWakeRule.keepsOn(fg, s.appWake, s.appWakePackages, s.appWakeChargingOnly, charging)) { reasons += Reason.APP; trigger = fg }
             if (s.devWake && isDebuggable(fg)) { reasons += Reason.DEBUG_APP; trigger = fg }
         }
 

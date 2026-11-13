@@ -4,6 +4,16 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.3.0 (2026-11-13)
+
+AppWake can wait for the charger, and the widget tells you why the screen is on and for how long.
+
+### New
+
+- **AppWake: "Only while charging", per app.** In Automations › AppWake › Choose apps, every app you switch on gets its own "Only while charging" switch. With it on, that app keeps the screen on only while the phone is also charging, for example a navigation app on the car charger, while your other AppWake apps keep working as before. Plugging in or unplugging takes effect straight away. The Choose apps row shows how many of your apps are set to it.
+- **The home-screen widget shows why and for how long.** While the screen is kept on, the widget names the reason (by you, schedule, app, charging, Bluetooth or debug build, with "+1" when more than one applies) and, for the timer or a ScheduleWake window, the minutes left ("12 min left", "1 h 05 left"). A one-cell widget uses a compact layout; make it taller for a bigger icon and room for two lines. After a low-battery stop it says so.
+- **Light on the battery.** The widget is only redrawn when what it shows changes. While a countdown is shown, one alarm at the next minute keeps it current; it never wakes the phone, and nothing runs at all while WakeCtrl is off. With **Alarms and reminders** allowed (ScheduleWake asks for it) the minutes change right on the minute; without it, Android may update them a little later.
+
 ## v0.2.0 (2026-11-13)
 
 A new automation: keep the screen on during set hours.

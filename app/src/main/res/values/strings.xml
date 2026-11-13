@@ -48,6 +48,10 @@
     <string name="app_wake_sub">Reading, recipes, maps, presentations…</string>
     <string name="app_wake_footer">WakeCtrl checks which app is on screen with Android\'s Usage access. It only reads the app name, on this phone, and only while the screen is on.</string>
     <string name="choose_apps">Choose apps</string>
+    <string name="apps_selected_charging">%1$s · %2$d only while charging</string>
+    <string name="app_wake_charging_only">Only while charging</string>
+    <string name="app_wake_charging_only_sub">Keeps the screen on for this app only when the phone is also charging</string>
+    <string name="app_picker_note">Switch on the apps that keep the screen on. For each one you can choose \"Only while charging\", for example for a navigation app that you only want on in the car.</string>
     <string name="search_apps">Search apps</string>
     <string name="loading_apps">Loading apps…</string>
     <string name="charge_wake">ChargeWake</string>
@@ -179,7 +183,17 @@
     <string name="tile_on">On</string>
     <string name="tile_off">Off</string>
     <string name="start_blocked">Android didn\'t let WakeCtrl start from here. Open WakeCtrl once, then try again.</string>
-    <string name="widget_description">Keep the screen on with one tap</string>
+    <string name="widget_description">Keep the screen on with one tap, and see why and for how long</string>
+    <string name="widget_left_min">%1$d min left</string>
+    <string name="widget_left_hours">%1$d h %2$02d left</string>
+    <string name="widget_reason_manual">By you</string>
+    <string name="widget_reason_app">App</string>
+    <string name="widget_reason_charging">Charging</string>
+    <string name="widget_reason_bluetooth">Bluetooth</string>
+    <string name="widget_reason_debug">Debug build</string>
+    <string name="widget_reason_schedule">Schedule</string>
+    <string name="widget_reason_more">%1$s +%2$d</string>
+    <string name="widget_low_battery">Low battery</string>
     <string name="shortcut_toggle_short">Toggle</string>
     <string name="shortcut_toggle_long">Turn keep screen on on or off</string>
 </resources>
