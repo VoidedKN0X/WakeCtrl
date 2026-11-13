@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -121,6 +122,9 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
 
     /** The stored settings, read from storage (for receivers that run before [settings] has loaded). */
     suspend fun settingsLoaded(): AppSettings = prefs.first().toSettings()
+
+    /** "Allow other apps", as stored (no default value emitted before the settings have loaded). */
+    val allowAutomation: Flow<Boolean> = prefs.map { it[K.allowAutomation] ?: false }.distinctUntilChanged()
 
     /** Whether a manual "keep awake" was running when the phone went down (to resume it after a restart). */
     suspend fun wasManualOnNow(): Boolean = prefs.first()[K.manualOn] ?: false

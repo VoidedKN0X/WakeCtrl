@@ -4,6 +4,20 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.1.3 (2026-11-13)
+
+A security update for automation apps, and a little less work for your phone.
+
+### Security
+
+- **Automation apps can't reach WakeCtrl at all while "Allow other apps" is off.** Before, WakeCtrl received their requests and ignored them; now the part that listens for them is switched off in Android itself until you allow it, and switched off again when you turn the setting off. With the setting on, Tasker, Home Assistant, MacroDroid and others work exactly as before. Because blocked requests no longer reach WakeCtrl, they're no longer listed in the activity log.
+- **Release builds drop debug logging** from WakeCtrl and its libraries.
+- **The build tool download is checked** against its published SHA-256 checksum.
+
+### Performance
+
+- The activity log is saved in the background instead of on the main thread.
+
 ## v0.1.2 (2026-11-12)
 
 ### Fixed

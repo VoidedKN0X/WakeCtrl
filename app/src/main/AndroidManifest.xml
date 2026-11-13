@@ -7,12 +7,11 @@
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
-    <!-- Keeping the screen on: a wake lock as fallback, and the status notification while it's running. -->
+    <!-- Keeping the screen on: short screen wake locks, and the status notification while it's running. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- "Display over other apps": a 1-pixel invisible window that keeps the screen on (the most reliable way). -->
     <!-- Optional brightness while on (Android's "Modify system settings"; you allow it yourself). -->
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
@@ -111,9 +110,12 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
-        <!-- Automation apps: explicit broadcasts only, and only when "Allow other apps" is on in Settings. -->
+        <!-- Automation apps: ON / OFF / TOGGLE broadcasts. Disabled until "Allow other apps" is on in Settings
+             (WakeCtrl switches the component on and off with the setting), so while it's off no other app can
+             reach it at all; the receiver also checks the setting itself. -->
         <receiver
             android:name=".widget.AutomationReceiver"
+            android:enabled="false"
             android:exported="true"
             tools:ignore="ExportedReceiver">
             <intent-filter>

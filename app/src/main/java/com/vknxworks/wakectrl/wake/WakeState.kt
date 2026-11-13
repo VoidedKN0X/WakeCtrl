@@ -58,17 +58,22 @@ object ActivityLog {
         lines.value = runCatching { f.readLines().takeLast(MAX) }.getOrDefault(emptyList())
     }
 
+    /** Writes happen one at a time on a background thread, never on the main thread. */
+    private val writer = java.util.concurrent.Executors.newSingleThreadExecutor { r -> Thread(r, "WakeCtrl-log").apply { isDaemon = true } }
+
     @Synchronized
     fun add(text: String) {
         val line = fmt.format(Date()) + "  " + text
         val next = (lines.value + line).takeLast(MAX)
         lines.value = next
-        file?.let { f -> runCatching { f.writeText(next.joinToString("\n") + "\n") } }
+        val f = file ?: return
+        writer.execute { runCatching { f.writeText(next.joinToString("\n") + "\n") } }
     }
 
     @Synchronized
     fun clear() {
         lines.value = emptyList()
-        file?.delete()
+        val f = file ?: return
+        writer.execute { f.delete() }
     }
 }

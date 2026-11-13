@@ -108,7 +108,7 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 
 - Your settings, chosen apps and devices, and the activity log are stored in WakeCtrl's private storage and can't be read by other apps.
 - Usage access is used only to see which app is on screen while AppWake or DevWake is on; nothing is recorded except the activity log line "app on screen".
-- Other apps can control WakeCtrl only when you switch on **Allow other apps**; ignored requests are noted in the activity log.
+- Other apps can control WakeCtrl only when you switch on **Allow other apps**. While it's off, the part of WakeCtrl that listens for them is switched off in Android itself, so other apps can't reach it at all; it can only turn the screen-on hold on, off or toggle it, and reads nothing else from the request.
 - Android backups don't include WakeCtrl's data, and WakeCtrl is left out of Android's cloud backup and its phone-to-phone transfer.
 - The Support, Report a bug, Source code and Licence links on the You page open in your browser, only when you tap them.
 
