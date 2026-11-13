@@ -92,6 +92,18 @@ class WakeService : Service() {
         }
     }
 
+    /** Screen off (power button or timeout): with "Turn off when the screen goes off", end the manual keep-awake. */
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != Intent.ACTION_SCREEN_OFF || !settingsReady) return
+            val s = container.settings.settings.value
+            if (s.offWhenScreenOff && manualOn) {
+                setManual(false, s, getString(R.string.log_source_screen_off))
+                evaluate()
+            }
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -110,6 +122,8 @@ class WakeService : Service() {
             // System broadcasts still arrive; other apps can't fake them.
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
+        // SCREEN_OFF only reaches receivers registered at runtime; it's a protected system broadcast.
+        ContextCompat.registerReceiver(this, screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_NOT_EXPORTED)
         loadConnectedBluetooth()
         WakeState.set { it.copy(running = true) }
     }
@@ -466,6 +480,7 @@ class WakeService : Service() {
         if (!container.settings.settings.value.scheduleWake) ScheduleAlarm.cancel(this)
         runCatching { unregisterReceiver(batteryReceiver) }
         runCatching { unregisterReceiver(btReceiver) }
+        runCatching { unregisterReceiver(screenOffReceiver) }
         scope.cancel()
         WakeState.set { WakeStatus() }
         WakeTileService.refresh(this)

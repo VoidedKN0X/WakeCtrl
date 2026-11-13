@@ -69,6 +69,8 @@ data class AppSettings(
     val lowBattery: LowBattery = LowBattery.OFF,
     /** Remind after 3 hours on battery. */
     val longReminder: Boolean = true,
+    /** Turn the manual keep-awake off when the screen goes off (power button or the phone's own timeout). */
+    val offWhenScreenOff: Boolean = false,
     /** Turn a manual "keep awake" back on after the phone restarts. */
     val resumeAfterRestart: Boolean = false,
     val appWake: Boolean = false,
@@ -104,6 +106,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val brightness = stringPreferencesKey("brightness")
         val lowBattery = stringPreferencesKey("low_battery")
         val longReminder = booleanPreferencesKey("long_reminder")
+        val offWhenScreenOff = booleanPreferencesKey("off_when_screen_off")
         val resume = booleanPreferencesKey("resume_after_restart")
         val appWake = booleanPreferencesKey("app_wake")
         val appWakePackages = stringSetPreferencesKey("app_wake_packages")
@@ -144,6 +147,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         brightness = enumOr(this[K.brightness], Brightness.UNCHANGED),
         lowBattery = enumOr(this[K.lowBattery], LowBattery.OFF),
         longReminder = this[K.longReminder] ?: true,
+        offWhenScreenOff = this[K.offWhenScreenOff] ?: false,
         resumeAfterRestart = this[K.resume] ?: false,
         appWake = this[K.appWake] ?: false,
         appWakePackages = this[K.appWakePackages] ?: emptySet(),
@@ -170,6 +174,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
                 p[K.brightness] = s.brightness.name
                 p[K.lowBattery] = s.lowBattery.name
                 p[K.longReminder] = s.longReminder
+                p[K.offWhenScreenOff] = s.offWhenScreenOff
                 p[K.resume] = s.resumeAfterRestart
                 p[K.appWake] = s.appWake
                 p[K.appWakePackages] = s.appWakePackages
