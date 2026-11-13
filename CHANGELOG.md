@@ -4,6 +4,21 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.2.0 (2026-11-13)
+
+A new automation: keep the screen on during set hours.
+
+### New
+
+- **ScheduleWake** on the Automations tab keeps the screen on during the hours you set, for example weekdays 08:00–17:30. Add as many time windows as you like (up to 20), each with its own days. A window can run past midnight (22:00–06:00 starts on the days you pick and ends the next morning); the same start and end time means the whole day.
+- **Starts and ends on time.** WakeCtrl sets an alarm for the next start or end, so it switches even when the phone has been lying idle. For starts and ends on the minute, allow **Alarms and reminders** for WakeCtrl (a row on the Automations tab takes you there; WakeCtrl asks only when ScheduleWake is on). Without it the schedule still works, but Android may run it a few minutes late.
+- **Follows your clock.** Daylight-saving changes, a new time zone, changing the time by hand and restarting the phone are all handled: 08:00 stays 08:00 on the clock.
+- **Works like the other automations:** "schedule (until 17:30)" shows as the reason in the app and the notification, the activity log notes when a window starts and ends, the screen is held the same way (a renewed short screen wake lock, no overlay, only while the screen is on and the phone unlocked), and the low-battery stop applies to it too.
+
+### Permissions
+
+- **Alarms and reminders** (`SCHEDULE_EXACT_ALARM`), off until you allow it, only so ScheduleWake starts and ends on the minute.
+
 ## v0.1.3 (2026-11-13)
 
 A security update for automation apps, and a little less work for your phone.

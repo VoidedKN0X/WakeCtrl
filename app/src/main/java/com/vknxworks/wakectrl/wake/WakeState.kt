@@ -11,7 +11,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Why the screen is being kept on. */
-enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, DEBUG_APP }
+enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, DEBUG_APP, SCHEDULE }
 
 data class WakeStatus(
     /** The service is running (keeping awake or watching for an automation). */
@@ -25,6 +25,8 @@ data class WakeStatus(
     val stoodDown: Boolean = false,
     /** The app on screen that triggered AppWake or DevWake, if any. */
     val triggerApp: String? = null,
+    /** While a Schedule window keeps the screen on: when it ends (epoch ms), or 0. */
+    val scheduleUntil: Long = 0L,
 ) {
     val active: Boolean get() = reasons.isNotEmpty()
     val manual: Boolean get() = Reason.MANUAL in reasons

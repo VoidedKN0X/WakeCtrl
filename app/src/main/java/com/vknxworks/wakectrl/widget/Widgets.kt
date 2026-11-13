@@ -162,16 +162,25 @@ class AutomationReceiver : BroadcastReceiver() {
     }
 }
 
-/** After a restart: resume a manual keep-awake (if set) and start watching for automations. */
+/**
+ * After a restart: resume a manual keep-awake (if set) and start watching for automations. After a change of time
+ * or time zone, or when exact alarms are allowed again: work the Schedule out again.
+ */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED && intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        val boot = intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED
+        val clock = intent.action in setOf(
+            Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED,
+            android.app.AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED,
+        )
+        if (!boot && !clock) return
         val c = context.container
         val pending = goAsync()
         c.appScope.launch {
             try {
                 val s = c.settings.settingsLoaded()
-                val resume = s.resumeAfterRestart && c.settings.wasManualOnNow()
+                com.vknxworks.wakectrl.wake.ScheduleAlarm.forget()
+                val resume = boot && s.resumeAfterRestart && c.settings.wasManualOnNow()
                 when {
                     resume -> WakeService.send(context, WakeService.ACTION_RESUME)
                     s.anyAutomation -> WakeService.send(context, WakeService.ACTION_REFRESH)

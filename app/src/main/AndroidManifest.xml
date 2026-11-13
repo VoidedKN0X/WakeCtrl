@@ -25,6 +25,9 @@
     <!-- Resume after a restart, and keep automations running. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Schedule: start and end on the minute (Android's "Alarms and reminders"; you allow it yourself).
+         Without it the schedule still works, as close to the minute as Android allows. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Fingerprint unlock for the app lock. -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- Hides other apps' floating windows over the lock, PIN and confirmation screens only. -->
@@ -131,8 +134,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- Schedule: work the next start or end out again after a clock or time zone change. -->
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+
+        <!-- Schedule: WakeCtrl's own alarm at the start and end of a window (not exported). -->
+        <receiver
+            android:name=".wake.ScheduleReceiver"
+            android:exported="false" />
 
         <!-- No downloadable emoji font: don't let androidx.emoji2 look one up from a font provider
              at start-up. Emoji are drawn with the phone's own emoji font instead. -->

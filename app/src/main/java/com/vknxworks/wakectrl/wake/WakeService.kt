@@ -74,6 +74,9 @@ class WakeService : Service() {
     private var renewJob: kotlinx.coroutines.Job? = null
     private var lastNotifText: String? = null
     private var settingsReady = false
+    /** While a Schedule window holds the screen: when it ends (epoch ms). */
+    private var scheduleUntil = 0L
+    private var wasScheduled = false
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = readBattery(intent)
@@ -183,6 +186,24 @@ class WakeService : Service() {
         var trigger: String? = null
         if (s.chargeWake && charging) reasons += Reason.CHARGING
         if (s.btWake && btConnected.any { it in s.btWakeDevices }) reasons += Reason.BLUETOOTH
+        // Schedule: inside one of the set windows (worked out on the wall clock, so DST and time zone changes
+        // apply straight away), and an alarm for the next start or end so it switches on time.
+        val zNow = java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneId.systemDefault())
+        var scheduleUntil = 0L
+        if (s.scheduleWake && ScheduleMath.isInside(s.scheduleWindows, zNow)) {
+            reasons += Reason.SCHEDULE
+            scheduleUntil = ScheduleMath.nextChange(s.scheduleWindows, zNow)?.toInstant()?.toEpochMilli() ?: 0L
+        }
+        this.scheduleUntil = scheduleUntil
+        val scheduled = Reason.SCHEDULE in reasons
+        if (scheduled != wasScheduled) {
+            wasScheduled = scheduled
+            ActivityLog.add(
+                if (scheduled && scheduleUntil > 0) getString(R.string.log_schedule_start, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(scheduleUntil)))
+                else getString(if (scheduled) R.string.log_schedule_start_open else R.string.log_schedule_end),
+            )
+        }
+        ScheduleAlarm.update(this, s, zNow)
         val fg = foregroundPkg.takeIf { interactive }
         if (fg != null && fg != packageName) {
             if (s.appWake && fg in s.appWakePackages) { reasons += Reason.APP; trigger = fg }
@@ -227,7 +248,10 @@ class WakeService : Service() {
         }
 
         WakeState.set {
-            it.copy(running = true, reasons = reasons, manualUntil = if (manualOn) manualUntil else 0L, method = holding, stoodDown = stoodDown, triggerApp = trigger)
+            it.copy(
+                running = true, reasons = reasons, manualUntil = if (manualOn) manualUntil else 0L, method = holding, stoodDown = stoodDown, triggerApp = trigger,
+                scheduleUntil = if (Reason.SCHEDULE in reasons) scheduleUntil else 0L,
+            )
         }
         updateNotification(reasons)
         WakeTileService.refresh(this)
@@ -372,15 +396,21 @@ class WakeService : Service() {
 
     // ---------- Notifications ----------
 
-    private fun reasonText(r: Reason) = getString(
-        when (r) {
-            Reason.MANUAL -> R.string.reason_manual
-            Reason.APP -> R.string.reason_app
-            Reason.CHARGING -> R.string.reason_charging
-            Reason.BLUETOOTH -> R.string.reason_bluetooth
-            Reason.DEBUG_APP -> R.string.reason_debug
-        },
-    )
+    private fun reasonText(r: Reason): String {
+        if (r == Reason.SCHEDULE && scheduleUntil > 0) {
+            return getString(R.string.reason_schedule_until, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(scheduleUntil)))
+        }
+        return getString(
+            when (r) {
+                Reason.MANUAL -> R.string.reason_manual
+                Reason.APP -> R.string.reason_app
+                Reason.CHARGING -> R.string.reason_charging
+                Reason.BLUETOOTH -> R.string.reason_bluetooth
+                Reason.DEBUG_APP -> R.string.reason_debug
+                Reason.SCHEDULE -> R.string.reason_schedule
+            },
+        )
+    }
 
     private fun updateNotification(reasons: Set<Reason>) {
         val text = when {
@@ -431,6 +461,8 @@ class WakeService : Service() {
 
     override fun onDestroy() {
         release()
+        // With Schedule on, its alarm stays set so the next window starts WakeCtrl again.
+        if (!container.settings.settings.value.scheduleWake) ScheduleAlarm.cancel(this)
         runCatching { unregisterReceiver(batteryReceiver) }
         runCatching { unregisterReceiver(btReceiver) }
         scope.cancel()
