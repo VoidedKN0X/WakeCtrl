@@ -95,7 +95,8 @@ class ToggleShortcutActivity : Activity() {
 
 /**
  * Lets automation apps (Tasker, Home Assistant, MacroDroid…) turn WakeCtrl on and off with an explicit
- * broadcast: com.vknxworks.wakectrl.action.ON / OFF / TOGGLE. Ignored unless "Allow other apps" is on.
+ * broadcast: com.vknxworks.wakectrl.action.ON / OFF / TOGGLE. The component is disabled (unreachable) while
+ * "Allow other apps" is off, and the setting is checked again for every broadcast. Extras are never read.
  */
 class AutomationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -114,6 +115,21 @@ class AutomationReceiver : BroadcastReceiver() {
                 }
             } finally {
                 pending.finish()
+            }
+        }
+    }
+
+    companion object {
+        /** Turns the receiver on or off to match "Allow other apps" (a no-op when it already matches). */
+        fun setEnabled(context: Context, on: Boolean) {
+            val pm = context.packageManager
+            val component = ComponentName(context, AutomationReceiver::class.java)
+            val want = if (on) android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            else android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            runCatching {
+                if (pm.getComponentEnabledSetting(component) != want) {
+                    pm.setComponentEnabledSetting(component, want, android.content.pm.PackageManager.DONT_KILL_APP)
+                }
             }
         }
     }

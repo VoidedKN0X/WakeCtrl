@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Manual dependency container; one per process. */
@@ -29,6 +30,13 @@ class AppContainer(val context: Context) {
     init {
         ActivityLog.init(context)
         AppLock.onLocked = { onLocked() }
+        // Other apps can only reach AutomationReceiver while "Allow other apps" is on: the component follows the
+        // setting (also right after an update, which starts the process through BootReceiver).
+        appScope.launch {
+            settings.allowAutomation.collect { on ->
+                withContext(Dispatchers.IO) { com.vknxworks.wakectrl.widget.AutomationReceiver.setEnabled(context, on) }
+            }
+        }
     }
 
     /** Applies changed settings to the running service (or starts it when an automation was switched on). */
