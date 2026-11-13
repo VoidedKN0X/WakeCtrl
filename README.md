@@ -4,7 +4,7 @@
 
 [![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/WakeCtrl?label=download)](https://github.com/VoidedKN0X/WakeCtrl/releases/latest) ![Android 15+](https://img.shields.io/badge/Android-15%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) ![Telemetry-free](https://img.shields.io/badge/telemetry-none-brightgreen) ![Offline](https://img.shields.io/badge/internet-none-brightgreen) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
 
-WakeCtrl stops your screen from turning off while you read, cook, follow a map or present. Turn it on yourself, with an optional timer. Or let it switch on by itself while certain apps are open, while the phone charges, while your car or speaker is connected, or while a debug build is on screen. It never goes online.
+WakeCtrl stops your screen from turning off while you read, cook, follow a map or present. Turn it on yourself, with an optional timer. Or let it switch on by itself while certain apps are open, while the phone charges, while your car or speaker is connected, during set hours, or while a debug build is on screen. It never goes online.
 
 Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
@@ -18,6 +18,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
   - **AppWake:** while apps you choose are on screen (reading, recipes, maps, presentations)
   - **ChargeWake:** while the phone is charging
   - **BTWake:** while a paired Bluetooth device you choose is connected (your car, a speaker)
+  - **ScheduleWake:** during set hours, for example weekdays 08:00–17:30, with windows that can run past midnight
   - **DevWake:** while a debug build of any app is on screen, for developers
 - **Screen:** set the brightness while it's on (restored afterwards), or let the screen dim when idle instead of staying bright
 - **Battery care:** stop at a low battery level you pick (10 to 30%), and a reminder after 3 hours on battery. Turn it on again after a low-battery stop to override it until you charge
@@ -46,7 +47,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Getting started
 
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
-- **Automations:** switch on AppWake, ChargeWake, BTWake or DevWake, then choose the apps or devices. AppWake and DevWake ask you to allow Usage access in Android's settings.
+- **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake or DevWake, then choose the apps, devices or hours. AppWake and DevWake ask you to allow Usage access in Android's settings.
 - **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
 - **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile. Long-press the home screen to add the widget, or long-press WakeCtrl's icon for the shortcut.
 - **Settings** (profile picture): brightness, dimming, low battery, reminder, resume after restart, other apps, activity log and privacy.
@@ -79,6 +80,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 | Nearby devices (Bluetooth) | BTWake: which of your paired devices is connected. |
 | Modify system settings (*you allow it*) | Only for "Brightness while on"; your brightness is restored afterwards. |
 | Run at start-up | Resume after a restart, and keep your automations running. |
+| Alarms and reminders (*you allow it*) | ScheduleWake: start and end your set hours on the minute. Without it they may run a few minutes late. |
 | Ignore battery optimisations (*you allow it*) | So the phone doesn't stop WakeCtrl in the background. |
 | Use biometric hardware | Optional fingerprint unlock for the app lock. |
 | Hide other apps' floating windows over the PIN screen | While the lock or PIN screen is showing, other apps' floating windows are hidden over it, so nothing can cover or imitate it. |

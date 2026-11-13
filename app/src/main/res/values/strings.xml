@@ -39,6 +39,8 @@
     <string name="reason_charging">charging</string>
     <string name="reason_bluetooth">Bluetooth device</string>
     <string name="reason_debug">debug build on screen</string>
+    <string name="reason_schedule">schedule</string>
+    <string name="reason_schedule_until">schedule (until %1$s)</string>
 
     <!-- Automations -->
     <string name="app_wake">AppWake</string>
@@ -61,6 +63,31 @@
     <string name="dev_wake">DevWake</string>
     <string name="dev_wake_switch">While a debug build is on screen</string>
     <string name="dev_wake_footer">Keeps the screen on while you test apps you\'re developing (any app marked debuggable). Uses Usage access, like AppWake.</string>
+    <string name="schedule_wake">ScheduleWake</string>
+    <string name="schedule_wake_switch">During set hours</string>
+    <string name="schedule_wake_sub">Keep the screen on in the time windows below</string>
+    <string name="schedule_wake_footer">A window that ends at or before its start time runs past midnight and ends the next day; the days are the days it starts. Times follow your phone\'s clock, also after a time zone or daylight-saving change.</string>
+    <string name="schedule_add">Add time window</string>
+    <string name="schedule_none">No time windows yet</string>
+    <string name="schedule_window">%1$s–%2$s</string>
+    <string name="schedule_next_day">%1$s · ends the next day</string>
+    <string name="schedule_whole_day">%1$s · all day</string>
+    <string name="schedule_days_every">Every day</string>
+    <string name="schedule_days_weekdays">Weekdays</string>
+    <string name="schedule_days_weekend">Weekends</string>
+    <string name="schedule_days_none">No days chosen</string>
+    <string name="schedule_exact">Allow alarms and reminders</string>
+    <string name="schedule_exact_sub">So set hours start and end on the minute. Without it, Android may run them a few minutes late.</string>
+    <string name="schedule_edit_title">Time window</string>
+    <string name="schedule_new_title">New time window</string>
+    <string name="schedule_start">Starts</string>
+    <string name="schedule_end">Ends</string>
+    <string name="schedule_days">Days</string>
+    <string name="schedule_edit_note">Pick the days the window starts on. An end at or before the start means the next day.</string>
+    <string name="schedule_delete">Delete time window</string>
+    <string name="schedule_delete_body">The screen won\'t be kept on during these hours any more.</string>
+    <string name="schedule_delete_confirm">Delete</string>
+    <string name="schedule_ok">OK</string>
     <string name="allow_usage">Allow Usage access</string>
     <string name="allow_usage_sub">Needed to see which app is on screen. Find WakeCtrl in the list and switch it on.</string>
     <string name="allow_notifications">Allow notifications</string>
@@ -135,6 +162,9 @@
     <string name="log_auto_on">Kept on: %1$s</string>
     <string name="log_released">Let the screen sleep again</string>
     <string name="log_timer_done">Timer finished</string>
+    <string name="log_schedule_start">Schedule window started (until %1$s)</string>
+    <string name="log_schedule_start_open">Schedule window started</string>
+    <string name="log_schedule_end">Schedule window ended</string>
     <string name="log_low_battery">Stopped at %1$d%% battery</string>
     <string name="log_automation_blocked">Ignored a request from another app (\"Allow other apps\" is off)</string>
     <string name="log_source_app">app</string>

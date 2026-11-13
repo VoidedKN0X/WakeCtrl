@@ -77,6 +77,9 @@ data class AppSettings(
     val btWake: Boolean = false,
     val btWakeDevices: Set<String> = emptySet(),
     val devWake: Boolean = false,
+    /** Schedule: keep the screen on during set hours. */
+    val scheduleWake: Boolean = false,
+    val scheduleWindows: List<com.vknxworks.wakectrl.wake.ScheduleWindow> = emptyList(),
     /** Let other apps (Tasker, Home Assistant…) turn WakeCtrl on and off with an intent. */
     val allowAutomation: Boolean = false,
     /** App lock: when it asks again after WakeCtrl was in the background. */
@@ -88,7 +91,8 @@ data class AppSettings(
 ) {
     /** Any automation that needs WakeCtrl to watch in the background. */
     val anyAutomation: Boolean
-        get() = (appWake && appWakePackages.isNotEmpty()) || chargeWake || (btWake && btWakeDevices.isNotEmpty()) || devWake
+        get() = (appWake && appWakePackages.isNotEmpty()) || chargeWake || (btWake && btWakeDevices.isNotEmpty()) || devWake ||
+            (scheduleWake && scheduleWindows.any { it.days.isNotEmpty() })
 }
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -105,6 +109,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val btWake = booleanPreferencesKey("bt_wake")
         val btWakeDevices = stringSetPreferencesKey("bt_wake_devices")
         val devWake = booleanPreferencesKey("dev_wake")
+        val scheduleWake = booleanPreferencesKey("schedule_wake")
+        val scheduleWindows = stringPreferencesKey("schedule_windows")
         val allowAutomation = booleanPreferencesKey("allow_automation")
         val lockTimeout = stringPreferencesKey("lock_timeout")
         val hideScreenshots = booleanPreferencesKey("hide_screenshots")
@@ -142,6 +148,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         btWake = this[K.btWake] ?: false,
         btWakeDevices = this[K.btWakeDevices] ?: emptySet(),
         devWake = this[K.devWake] ?: false,
+        scheduleWake = this[K.scheduleWake] ?: false,
+        scheduleWindows = com.vknxworks.wakectrl.wake.ScheduleMath.decode(this[K.scheduleWindows]),
         allowAutomation = this[K.allowAutomation] ?: false,
         lockTimeout = enumOr(this[K.lockTimeout], LockTimeout.IMMEDIATELY),
         hideScreenshots = this[K.hideScreenshots] ?: false,
@@ -165,6 +173,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
                 p[K.btWake] = s.btWake
                 p[K.btWakeDevices] = s.btWakeDevices
                 p[K.devWake] = s.devWake
+                p[K.scheduleWake] = s.scheduleWake
+                p[K.scheduleWindows] = com.vknxworks.wakectrl.wake.ScheduleMath.encode(s.scheduleWindows)
                 p[K.allowAutomation] = s.allowAutomation
                 p[K.lockTimeout] = s.lockTimeout.name
                 p[K.hideScreenshots] = s.hideScreenshots

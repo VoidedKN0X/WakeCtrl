@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 // Pages opened from a tab
 @Serializable data object AppPickerRoute
 @Serializable data object DevicePickerRoute
+/** A Schedule time window to change, or -1 for a new one. */
+@Serializable data class ScheduleWindowRoute(val id: Int)
 
 // Opened from the profile picture: the You page, and Settings (with the activity log) from there
 @Serializable data object YouRoute

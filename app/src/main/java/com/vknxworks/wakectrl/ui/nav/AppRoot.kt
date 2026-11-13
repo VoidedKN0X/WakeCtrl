@@ -67,6 +67,7 @@ import com.vknxworks.wakectrl.ui.components.TabItem
 import com.vknxworks.wakectrl.ui.wake.AppPickerScreen
 import com.vknxworks.wakectrl.ui.wake.AutomationsScreen
 import com.vknxworks.wakectrl.ui.wake.DevicePickerScreen
+import com.vknxworks.wakectrl.ui.wake.ScheduleWindowScreen
 import com.vknxworks.wakectrl.ui.wake.WakeScreen
 import com.vknxworks.wakectrl.ui.settings.LogScreen
 import com.vknxworks.wakectrl.ui.settings.SettingsScreen
@@ -185,6 +186,7 @@ private fun AppNavHost(navController: NavHostController) {
         composable<AutomationsRoute> { AutomationsScreen() }
         composable<AppPickerRoute> { AppPickerScreen() }
         composable<DevicePickerRoute> { DevicePickerScreen() }
+        composable<ScheduleWindowRoute> { ScheduleWindowScreen(it.toRoute<ScheduleWindowRoute>().id) }
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }
         composable<LogRoute> { LogScreen() }

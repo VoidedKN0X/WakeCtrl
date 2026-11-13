@@ -112,6 +112,7 @@ fun reasonLabel(r: Reason): String = stringResource(
         Reason.CHARGING -> R.string.reason_charging
         Reason.BLUETOOTH -> R.string.reason_bluetooth
         Reason.DEBUG_APP -> R.string.reason_debug
+        Reason.SCHEDULE -> R.string.reason_schedule
     },
 )
 
@@ -214,7 +215,7 @@ fun requestUnrestrictedBattery(context: android.content.Context) {
 fun appLabel(pm: PackageManager, pkg: String): String =
     runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
 
-/** The Automations tab: AppWake, ChargeWake, BTWake and DevWake. */
+/** The Automations tab: AppWake, ChargeWake, BTWake, ScheduleWake and DevWake. */
 @Composable
 fun AutomationsScreen() {
     val context = LocalContext.current
@@ -267,6 +268,7 @@ fun AutomationsScreen() {
                 },
             )
         }
+        ScheduleGroup(settings, tick) { set(it) }
         Group(stringResource(R.string.dev_wake), footer = stringResource(R.string.dev_wake_footer)) {
             GroupSwitch(stringResource(R.string.dev_wake_switch), null, settings.devWake, Icons.Outlined.BugReport) { on -> set { it.copy(devWake = on) } }
             if (settings.devWake && !settings.appWake && !usageOk) UsageAccessRow()
