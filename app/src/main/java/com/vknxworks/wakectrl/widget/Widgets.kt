@@ -18,24 +18,51 @@ import com.vknxworks.wakectrl.container
 import com.vknxworks.wakectrl.wake.ActivityLog
 import com.vknxworks.wakectrl.wake.WakeService
 import com.vknxworks.wakectrl.wake.WakeState
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /** Quick Settings tile: tap to keep the screen on, tap again to stop. */
 class WakeTileService : TileService() {
-    override fun onStartListening() = update()
+    // While the Quick Settings panel is open the tile follows WakeState live. (requestListeningState does
+    // nothing while the tile is already listening, so a tap used to show its result only on the next open.)
+    private var scope: kotlinx.coroutines.CoroutineScope? = null
+
+    override fun onStartListening() {
+        update(WakeState.status.value.active)
+        scope?.cancel()
+        scope = kotlinx.coroutines.MainScope().also { s ->
+            s.launch { WakeState.status.collect { update(it.active) } }
+        }
+    }
+
+    override fun onStopListening() {
+        scope?.cancel()
+        scope = null
+    }
+
+    override fun onDestroy() {
+        scope?.cancel()
+        scope = null
+        super.onDestroy()
+    }
 
     override fun onClick() {
         val on = WakeState.status.value.manual
         val ok = WakeService.send(this, if (on) WakeService.ACTION_OFF else WakeService.ACTION_ON, getString(R.string.log_source_tile))
-        if (!ok) Toast.makeText(this, getString(R.string.start_blocked), Toast.LENGTH_LONG).show()
+        if (!ok) {
+            Toast.makeText(this, getString(R.string.start_blocked), Toast.LENGTH_LONG).show()
+            return
+        }
+        // Show the result of the tap straight away; the live state confirms (or corrects) it a moment later.
+        // Turning manual off can still leave the screen held by an automation, so only an "on" tap is shown early.
+        if (!on) update(true)
     }
 
-    private fun update() {
+    private fun update(active: Boolean) {
         val tile = qsTile ?: return
-        val st = WakeState.status.value
-        tile.state = if (st.active) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        tile.state = if (active) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         tile.label = getString(R.string.app_name)
-        tile.subtitle = getString(if (st.active) R.string.tile_on else R.string.tile_off)
+        tile.subtitle = getString(if (active) R.string.tile_on else R.string.tile_off)
         tile.updateTile()
     }
 
