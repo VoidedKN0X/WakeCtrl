@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.ScreenLockPortrait
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Lock
@@ -108,6 +109,7 @@ fun SettingsScreen() {
                     settings.lowBattery,
                     icon = Icons.Outlined.BatteryAlert,
                 ) { l -> set { it.copy(lowBattery = l) } }
+                GroupSwitch(stringResource(R.string.off_when_screen_off), stringResource(R.string.off_when_screen_off_sub), settings.offWhenScreenOff, Icons.Outlined.ScreenLockPortrait) { on -> set { it.copy(offWhenScreenOff = on) } }
                 GroupSwitch(stringResource(R.string.long_reminder), stringResource(R.string.long_reminder_sub), settings.longReminder, Icons.Outlined.NotificationsActive) { on -> set { it.copy(longReminder = on) } }
                 GroupSwitch(stringResource(R.string.resume_restart), stringResource(R.string.resume_restart_sub), settings.resumeAfterRestart, Icons.Outlined.RestartAlt) { on -> set { it.copy(resumeAfterRestart = on) } }
             }

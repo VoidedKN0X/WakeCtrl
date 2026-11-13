@@ -4,6 +4,12 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.3.1 (2026-11-13)
+
+### New
+
+- **Turn off when the screen goes off** (Settings, off by default). When you switch the screen off with the power button, or it times out, keeping it awake by hand (the tile, the app or the widget) ends too. Next time you want it, turn it on again. Automations (AppWake, ChargeWake, BTWake, ScheduleWake, DevWake) aren't affected and keep working as before. The activity log notes "screen off" as the reason.
+
 ## v0.3.0 (2026-11-13)
 
 AppWake can wait for the charger, and the widget tells you why the screen is on and for how long.

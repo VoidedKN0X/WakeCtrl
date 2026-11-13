@@ -125,6 +125,9 @@
     <string name="low_battery_15">At 15%</string>
     <string name="low_battery_20">At 20%</string>
     <string name="low_battery_30">At 30%</string>
+    <string name="off_when_screen_off">Turn off when the screen goes off</string>
+    <string name="off_when_screen_off_sub">Switching the screen off ends keeping it awake by hand (tile, app or widget). Automations keep working.</string>
+    <string name="log_source_screen_off">screen off</string>
     <string name="long_reminder">Long-session reminder</string>
     <string name="long_reminder_sub">Notify after 3 hours of keeping the screen on while on battery</string>
     <string name="resume_restart">Resume after a restart</string>
