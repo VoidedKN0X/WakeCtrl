@@ -240,9 +240,11 @@ fun AutomationsScreen() {
 
         Group(stringResource(R.string.app_wake), footer = stringResource(R.string.app_wake_footer)) {
             GroupSwitch(stringResource(R.string.app_wake_switch), stringResource(R.string.app_wake_sub), settings.appWake, Icons.Outlined.Apps) { on -> set { it.copy(appWake = on) } }
+            val selected = pluralStringResource(R.plurals.apps_selected, settings.appWakePackages.size, settings.appWakePackages.size)
+            val chargingOnly = settings.appWakeChargingOnly.count { it in settings.appWakePackages }
             GroupRow(
                 stringResource(R.string.choose_apps),
-                pluralStringResource(R.plurals.apps_selected, settings.appWakePackages.size, settings.appWakePackages.size),
+                if (chargingOnly > 0) stringResource(R.string.apps_selected_charging, selected, chargingOnly) else selected,
                 icon = Icons.Outlined.Search,
                 showChevron = true,
                 onClick = { nav.navigate(AppPickerRoute) },
@@ -342,25 +344,67 @@ fun AppPickerScreen() {
         } else {
             val shown = list.filter { query.isBlank() || it.label.contains(query, ignoreCase = true) }
             LazyColumn(Modifier.fillMaxSize().navigationBarsPadding()) {
+                item(key = "note") {
+                    Text(
+                        stringResource(R.string.app_picker_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = CtrlColors.Muted,
+                        modifier = Modifier.padding(horizontal = Gutter, vertical = 4.dp),
+                    )
+                }
                 items(shown, key = { it.pkg }) { a ->
                     val checked = a.pkg in settings.appWakePackages
+                    val chargingOnly = checked && a.pkg in settings.appWakeChargingOnly
                     fun flip() {
                         scope.launch {
-                            c.settings.update { s -> s.copy(appWakePackages = if (checked) s.appWakePackages - a.pkg else s.appWakePackages + a.pkg) }
+                            c.settings.update { s ->
+                                if (checked) s.copy(appWakePackages = s.appWakePackages - a.pkg, appWakeChargingOnly = s.appWakeChargingOnly - a.pkg)
+                                else s.copy(appWakePackages = s.appWakePackages + a.pkg)
+                            }
                             c.refreshWake()
                         }
                     }
-                    Row(
-                        Modifier.fillMaxWidth().clickable { flip() }.padding(horizontal = Gutter, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    ) {
-                        if (a.icon != null) Image(a.icon, null, Modifier.size(36.dp)) else Spacer(Modifier.size(36.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(a.label, style = MaterialTheme.typography.bodyLarge, color = CtrlColors.Text)
-                            Text(a.pkg, style = CtrlType.Data, color = CtrlColors.Muted)
+                    fun flipCharging(on: Boolean) {
+                        scope.launch {
+                            c.settings.update { s -> s.copy(appWakeChargingOnly = if (on) s.appWakeChargingOnly + a.pkg else s.appWakeChargingOnly - a.pkg) }
+                            c.refreshWake()
                         }
-                        CtrlSwitch(checked, { flip() })
+                    }
+                    Column {
+                        Row(
+                            Modifier.fillMaxWidth().clickable { flip() }.padding(horizontal = Gutter, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            if (a.icon != null) Image(a.icon, null, Modifier.size(36.dp)) else Spacer(Modifier.size(36.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(a.label, style = MaterialTheme.typography.bodyLarge, color = CtrlColors.Text)
+                                Text(a.pkg, style = CtrlType.Data, color = CtrlColors.Muted)
+                            }
+                            CtrlSwitch(checked, { flip() })
+                        }
+                        // Per-app option, shown once the app is chosen: keep the screen on only while charging.
+                        if (checked) {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable { flipCharging(!chargingOnly) }
+                                    .padding(start = Gutter + 50.dp, end = Gutter, bottom = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                androidx.compose.material3.Icon(
+                                    Icons.Outlined.BatteryChargingFull, null,
+                                    Modifier.size(18.dp),
+                                    tint = if (chargingOnly) CtrlColors.AccentText else CtrlColors.Muted,
+                                )
+                                Column(Modifier.weight(1f)) {
+                                    Text(stringResource(R.string.app_wake_charging_only), style = MaterialTheme.typography.bodyMedium, color = CtrlColors.Text)
+                                    Text(stringResource(R.string.app_wake_charging_only_sub), style = MaterialTheme.typography.bodySmall, color = CtrlColors.Muted)
+                                }
+                                CtrlSwitch(chargingOnly, { flipCharging(it) })
+                            }
+                        }
                     }
                 }
             }

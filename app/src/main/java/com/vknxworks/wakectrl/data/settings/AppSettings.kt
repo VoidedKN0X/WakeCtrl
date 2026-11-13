@@ -73,6 +73,8 @@ data class AppSettings(
     val resumeAfterRestart: Boolean = false,
     val appWake: Boolean = false,
     val appWakePackages: Set<String> = emptySet(),
+    /** AppWake apps that keep the screen on only while the phone is also charging. */
+    val appWakeChargingOnly: Set<String> = emptySet(),
     val chargeWake: Boolean = false,
     val btWake: Boolean = false,
     val btWakeDevices: Set<String> = emptySet(),
@@ -105,6 +107,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val resume = booleanPreferencesKey("resume_after_restart")
         val appWake = booleanPreferencesKey("app_wake")
         val appWakePackages = stringSetPreferencesKey("app_wake_packages")
+        val appWakeChargingOnly = stringSetPreferencesKey("app_wake_charging_only")
         val chargeWake = booleanPreferencesKey("charge_wake")
         val btWake = booleanPreferencesKey("bt_wake")
         val btWakeDevices = stringSetPreferencesKey("bt_wake_devices")
@@ -144,6 +147,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         resumeAfterRestart = this[K.resume] ?: false,
         appWake = this[K.appWake] ?: false,
         appWakePackages = this[K.appWakePackages] ?: emptySet(),
+        appWakeChargingOnly = this[K.appWakeChargingOnly] ?: emptySet(),
         chargeWake = this[K.chargeWake] ?: false,
         btWake = this[K.btWake] ?: false,
         btWakeDevices = this[K.btWakeDevices] ?: emptySet(),
@@ -169,6 +173,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
                 p[K.resume] = s.resumeAfterRestart
                 p[K.appWake] = s.appWake
                 p[K.appWakePackages] = s.appWakePackages
+                // Only apps that are still chosen can be "only while charging".
+                p[K.appWakeChargingOnly] = s.appWakeChargingOnly intersect s.appWakePackages
                 p[K.chargeWake] = s.chargeWake
                 p[K.btWake] = s.btWake
                 p[K.btWakeDevices] = s.btWakeDevices

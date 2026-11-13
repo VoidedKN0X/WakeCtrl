@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The widget when it's at least 100dp tall. widget_wake_small.xml is the one-cell version; both have the same views. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
@@ -11,7 +12,7 @@
         android:id="@+id/widget_icon"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:contentDescription="@string/app_name"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_widget_off" />
     <TextView
         android:id="@+id/widget_state"
@@ -20,8 +21,23 @@
         android:layout_marginTop="4dp"
         android:fontFamily="monospace"
         android:letterSpacing="0.12"
+        android:maxLines="1"
         android:text="@string/tile_off"
         android:textAllCaps="true"
         android:textColor="#FFF4F4F2"
         android:textSize="11sp" />
+    <TextView
+        android:id="@+id/widget_reason"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:letterSpacing="0.08"
+        android:maxLines="2"
+        android:textAllCaps="true"
+        android:textColor="#FF9C9CA6"
+        android:textSize="9sp"
+        android:visibility="gone" />
 </LinearLayout>
