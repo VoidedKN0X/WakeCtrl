@@ -4,6 +4,19 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here had been run on a phone when it was written.
+
+### Battery
+
+- **Fewer checks while the screen is kept on by hand, by charging, by Bluetooth or by the schedule.** While WakeCtrl was holding the screen it looked at all its automations every 2 seconds, for as long as the screen stayed on, even when nothing it watches can change that fast. The 2-second check is now used only when AppWake (with apps chosen) or DevWake is on and the screen is on, because only those have to notice which app is in front. Otherwise WakeCtrl looks every 15 seconds; charging, Bluetooth devices, the schedule alarm, the screen switching on or off and anything you change in the app still take effect at once, as before.
+- What this means in practice: the low-battery stop and the 3-hour reminder can come up to 15 seconds later than before (they used to be noticed within 2 seconds while the screen was held).
+
+### Fixed
+
+- **The timer and a ScheduleWake window end on time.** WakeCtrl now wakes up exactly when the timer or the current schedule window ends, instead of noticing at the next check (up to 2 seconds late with the screen on, up to 15 seconds with it off, and later still for a schedule window when "Alarms and reminders" is not allowed and Android delivers the alarm late).
+
 ## v0.5.0 (2026-11-20)
 
 **This release encrypts some of what the app stores on the phone. An older version cannot read it afterwards, so export or back up anything you need before you update (details below).** Built and checked by CI only: nothing in this release had been run on a phone when it was published.

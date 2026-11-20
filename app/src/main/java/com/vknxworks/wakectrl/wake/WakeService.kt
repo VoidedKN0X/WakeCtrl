@@ -162,25 +162,32 @@ class WakeService : Service() {
                 ACTION_TOGGLE -> setManual(!manualOn, s, source)
                 ACTION_RESUME -> setManual(true, s, getString(R.string.log_source_restart))
             }
-            if (loop?.isActive != true) {
-                loop = startLoop()
-            } else {
-                evaluate()
-            }
+            // Look now, and work the wait until the next look out afresh (a timer may just have been set, or
+            // AppWake switched on).
+            loop?.cancel()
+            loop = startLoop()
         }
         return START_STICKY
     }
 
     /**
-     * Looks at the automations again and again: every 2 seconds while the screen is on and something needs a
-     * close watch, every 15 seconds otherwise. With the screen off nothing is held and no app is on screen, so
-     * the slow check is enough (timer, low battery, schedule); turning the screen on starts this again at once.
+     * Looks at the automations again and again: every 2 seconds while the screen is on and AppWake or DevWake
+     * has to notice the app on screen changing, every 15 seconds otherwise, and in any case right when the timer
+     * or the current schedule window ends ([PollRule]). Charging, Bluetooth, the schedule alarm and settings
+     * changes come in by themselves; turning the screen on starts this again at once.
      */
     private fun startLoop(): Job = scope.launch {
         while (isActive) {
             evaluate()
-            val quick = needsPolling() && getSystemService(PowerManager::class.java).isInteractive
-            delay(if (quick) 2_000L else 15_000L)
+            delay(
+                PollRule.delayMs(
+                    watchingApps = watchesApps(),
+                    screenOn = getSystemService(PowerManager::class.java).isInteractive,
+                    now = System.currentTimeMillis(),
+                    manualUntil = if (manualOn) manualUntil else 0L,
+                    scheduleUntil = scheduleUntil,
+                ),
+            )
         }
     }
 
@@ -197,9 +204,10 @@ class WakeService : Service() {
         ActivityLog.add(getString(if (on) R.string.log_manual_on else R.string.log_manual_off, source ?: getString(R.string.log_source_app)))
     }
 
-    private fun needsPolling(): Boolean {
+    /** AppWake (with apps chosen) or DevWake is on: the app on screen has to be watched closely. */
+    private fun watchesApps(): Boolean {
         val s = container.settings.settings.value
-        return (s.appWake && s.appWakePackages.isNotEmpty()) || s.devWake || manualUntil > 0 || holding != null
+        return (s.appWake && s.appWakePackages.isNotEmpty()) || s.devWake
     }
 
     /** Works out whether to hold the screen, and why; applies it; stops when there's nothing to do. */
