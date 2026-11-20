@@ -145,6 +145,9 @@
     <string name="activity_log_sub">What WakeCtrl did and why, kept on this phone</string>
     <string name="log_empty">Nothing yet</string>
     <string name="log_empty_body">Each time WakeCtrl keeps the screen on or lets go, it\'s noted here.</string>
+    <string name="log_unreadable">The saved activity log is encrypted and can\'t be opened on this phone right now. It is kept as it is and nothing is added to it. New lines are shown here but aren\'t saved until this is solved.</string>
+    <string name="log_try_again">Try again</string>
+    <string name="log_start_new">Start a new log</string>
 
     <!-- Notifications -->
     <string name="ch_status">Status</string>

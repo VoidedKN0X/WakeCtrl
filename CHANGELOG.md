@@ -4,6 +4,24 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing in this section has been run on a phone.
+
+### Privacy
+
+- **The activity log is now encrypted on the phone.** The log (what WakeCtrl did and why, including the line that names the app that kept the screen on) is stored in `activity.log` in WakeCtrl's private storage. That file is now sealed with AES-256-GCM under a random 256-bit data key. The data key is stored next to it in `data.key`, itself encrypted by a key in the phone's secure hardware (Android Keystore, StrongBox when the phone has it) that can't be exported and needs no fingerprint or PIN, so the service keeps writing the log in the background. This protects the log in a copy of WakeCtrl's files taken off the phone; it does not protect against someone who can run code as WakeCtrl on the unlocked phone, and it is independent of the app lock.
+- **Your existing log is kept.** The first time this version starts, the old log is read as before and then replaced, in one step, by an encrypted copy that was first written in full, read back from storage, decrypted and compared byte for byte. If anything in that fails, the old file stays in use and WakeCtrl tries again at the next start. If the phone has no usable secure hardware key, the log stays an ordinary file as before.
+- **If the encrypted log can't be opened** (for example the secure hardware key is gone), WakeCtrl does not delete or overwrite it. The activity log screen says so and offers **Try again** and **Start a new log**; starting a new log renames the old file to `activity.log.unreadable-…` instead of deleting it. Until then, new lines are shown but not saved. Keeping the screen on, the tile, the schedule and the automations don't depend on the log and work as before.
+- **Not encrypted, on purpose:** your settings, chosen apps, Bluetooth devices, schedule and the saved brightness (DataStore and preferences). The service, the Quick Settings tile, the restart receiver, the schedule alarm and the automation receiver all read them, some right after the phone restarts, and keeping the screen on must never depend on a key being available. The app lock's own storage was already protected and is unchanged.
+- **No going back to an older version with the log intact:** WakeCtrl 0.4.0 and older can't read the encrypted log. Installing an older version over this one shows an unreadable log and overwrites it with the next line. WakeCtrl has no export for the log.
+- "Forgot PIN?" still deletes the log, now also when it can't be opened, together with any log set aside earlier.
+
+### Changed
+
+- The log is read on a background thread when WakeCtrl starts, instead of on the main thread. The activity log screen stays blank for the moment that takes instead of showing "Nothing yet".
+- The log file is now replaced in one step when a line is added (written to a temporary file first), so a crash or power cut can't leave half a file.
+
 ## v0.4.0 (2026-11-20)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

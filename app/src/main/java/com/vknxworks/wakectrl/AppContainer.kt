@@ -62,7 +62,7 @@ class AppContainer(val context: Context) {
     suspend fun forgetEverything() {
         WakeService.send(context, WakeService.ACTION_OFF)
         settings.clear()
-        ActivityLog.clear()
+        ActivityLog.wipe()
         vault.disable()
         AppLock.markUnlocked()
         context.stopService(android.content.Intent(context, WakeService::class.java))

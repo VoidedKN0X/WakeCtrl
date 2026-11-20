@@ -109,6 +109,7 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 **Telemetry-free.** WakeCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It has **no internet permission**, works fully offline and never connects to the internet. Every build checks that the app has no network permission and no Google libraries.
 
 - Your settings, chosen apps and devices, and the activity log are stored in WakeCtrl's private storage and can't be read by other apps.
+- The activity log is also encrypted on the phone (AES-256-GCM, with a key protected by the phone's secure hardware). Settings, chosen apps and devices are not encrypted, because keeping the screen on has to work right after a restart. If the encrypted log can't be opened, WakeCtrl keeps it and tells you on the activity log screen.
 - Usage access is used only to see which app is on screen while AppWake or DevWake is on; nothing is recorded except the activity log line "app on screen".
 - Other apps can control WakeCtrl only when you switch on **Allow other apps**. While it's off, the part of WakeCtrl that listens for them is switched off in Android itself, so other apps can't reach it at all; it can only turn the screen-on hold on, off or toggle it, and reads nothing else from the request.
 - Android backups don't include WakeCtrl's data, and WakeCtrl is left out of Android's cloud backup and its phone-to-phone transfer.
