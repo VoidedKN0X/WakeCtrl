@@ -17,3 +17,7 @@ captures/
 keystore.properties
 !debug.keystore
 google-services.json
+
+# JVM crash dumps from a local build.
+hs_err_pid*.log
+replay_pid*.log
