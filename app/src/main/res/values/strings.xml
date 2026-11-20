@@ -24,7 +24,7 @@
     <string name="turn_off">Let it sleep</string>
     <string name="group_timer">Timer</string>
     <string name="timer">Keep on for</string>
-    <string name="timer_footer">Applies when you turn it on yourself (here, the tile, widget or shortcut). Automations keep the screen on for as long as they match.</string>
+    <string name="timer_footer">Applies when you turn it on yourself (here, the tile or shortcut). Automations keep the screen on for as long as they match.</string>
     <string name="timer_none">No limit</string>
     <string name="timer_5">5 minutes</string>
     <string name="timer_15">15 minutes</string>
@@ -126,7 +126,7 @@
     <string name="low_battery_20">At 20%</string>
     <string name="low_battery_30">At 30%</string>
     <string name="off_when_screen_off">Turn off when the screen goes off</string>
-    <string name="off_when_screen_off_sub">Switching the screen off ends keeping it awake by hand (tile, app or widget). Automations keep working.</string>
+    <string name="off_when_screen_off_sub">Switching the screen off ends keeping it awake by hand (tile or app). Automations keep working.</string>
     <string name="log_source_screen_off">screen off</string>
     <string name="long_reminder">Long-session reminder</string>
     <string name="long_reminder_sub">Notify after 3 hours of keeping the screen on while on battery</string>
@@ -177,26 +177,14 @@
     <string name="log_source_app">app</string>
     <string name="log_source_notification">notification</string>
     <string name="log_source_tile">Quick Settings tile</string>
-    <string name="log_source_widget">widget</string>
     <string name="log_source_shortcut">shortcut</string>
     <string name="log_source_automation">another app</string>
     <string name="log_source_restart">after restart</string>
 
-    <!-- Tile, widget, shortcut -->
+    <!-- Tile, shortcut -->
     <string name="tile_on">On</string>
     <string name="tile_off">Off</string>
     <string name="start_blocked">Android didn\'t let WakeCtrl start from here. Open WakeCtrl once, then try again.</string>
-    <string name="widget_description">Keep the screen on with one tap, and see why and for how long</string>
-    <string name="widget_left_min">%1$d min left</string>
-    <string name="widget_left_hours">%1$d h %2$02d left</string>
-    <string name="widget_reason_manual">By you</string>
-    <string name="widget_reason_app">App</string>
-    <string name="widget_reason_charging">Charging</string>
-    <string name="widget_reason_bluetooth">Bluetooth</string>
-    <string name="widget_reason_debug">Debug build</string>
-    <string name="widget_reason_schedule">Schedule</string>
-    <string name="widget_reason_more">%1$s +%2$d</string>
-    <string name="widget_low_battery">Low battery</string>
     <string name="shortcut_toggle_short">Toggle</string>
     <string name="shortcut_toggle_long">Turn keep screen on on or off</string>
 </resources>

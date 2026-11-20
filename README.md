@@ -23,7 +23,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Screen:** set the brightness while it's on (restored afterwards), or let the screen dim when idle instead of staying bright
 - **Battery care:** stop at a low battery level you pick (10 to 30%), and a reminder after 3 hours on battery. Turn it on again after a low-battery stop to override it until you charge
 - **Resume after a restart** if you had it on when the phone went down
-- **Everywhere you need it:** a Quick Settings tile, a home-screen widget that shows why the screen is on and the minutes left on the timer or schedule, a launcher shortcut, and an on/off button in the notification
+- **Everywhere you need it:** a Quick Settings tile, a launcher shortcut, and an on/off button in the notification
 - **Works with automation apps:** Tasker, Home Assistant, MacroDroid and others can turn it on, off or toggle it with a broadcast, only if you allow it (off by default)
 - **Activity log:** what WakeCtrl did and why, kept on the phone
 - **Keeps the screen on with a renewed screen wake lock** (a fresh short lock every 10 seconds, only while the screen is on and the phone unlocked): it works on strict phones like ColorOS, with no overlay and no "Display over other apps" permission. Settings shows what still helps on strict phones
@@ -49,7 +49,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
 - **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake or DevWake, then choose the apps, devices or hours. AppWake and DevWake ask you to allow Usage access in Android's settings.
 - **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
-- **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile. Long-press the home screen to add the widget, or long-press WakeCtrl's icon for the shortcut.
+- **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile, or long-press WakeCtrl's icon for the shortcut.
 - **Settings** (profile picture): brightness, dimming, low battery, reminder, resume after restart, other apps, activity log and privacy.
 
 ## Is it safe to install?
@@ -100,7 +100,7 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 - **Wrong PINs:** after 5 tries you wait 30 seconds, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
 - **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts.
 - **Forgot your PIN?** It can't be recovered. The lock screen offers to reset WakeCtrl's settings and automations, clear the activity log and turn the lock off.
-- **Keeping the screen on carries on** while the app is locked; the tile, widget and notification still work.
+- **Keeping the screen on carries on** while the app is locked; the tile and notification still work.
 
 **Hide in screenshots** and **Hide in recent apps** (both off by default): the first keeps WakeCtrl out of screenshots and screen recordings, the second shows a blank card in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card.
 

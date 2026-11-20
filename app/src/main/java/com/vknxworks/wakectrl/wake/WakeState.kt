@@ -34,7 +34,7 @@ data class WakeStatus(
 
 enum class Method { WAKE_LOCK_BRIGHT, WAKE_LOCK_DIM }
 
-/** Process-wide state shared by the service, the tile, the widget and the UI. */
+/** Process-wide state shared by the service, the tile and the UI. */
 object WakeState {
     private val _status = MutableStateFlow(WakeStatus())
     val status: StateFlow<WakeStatus> = _status.asStateFlow()

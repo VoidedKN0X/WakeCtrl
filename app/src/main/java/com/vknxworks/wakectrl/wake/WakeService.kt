@@ -36,7 +36,6 @@ import com.vknxworks.wakectrl.data.settings.AppSettings
 import com.vknxworks.wakectrl.data.settings.Brightness
 import com.vknxworks.wakectrl.ui.common.hasPermission
 import com.vknxworks.wakectrl.widget.WakeTileService
-import com.vknxworks.wakectrl.widget.WakeWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -133,7 +132,7 @@ class WakeService : Service() {
         val action = intent?.action
         val source = intent?.getStringExtra(EXTRA_SOURCE)
         scope.launch {
-            // After a cold start (boot, widget, tile) the settings may still be loading: read them first.
+            // After a cold start (boot, tile) the settings may still be loading: read them first.
             val s = container.settings.settingsLoaded()
             settingsReady = true
             when (action) {
@@ -270,7 +269,6 @@ class WakeService : Service() {
         }
         updateNotification(reasons)
         WakeTileService.refresh(this)
-        WakeWidget.refresh(this)
 
         // After a low-battery stop, stay (with a notification saying so) until the phone charges, so turning it
         // on again counts as overriding the stop.
@@ -484,7 +482,6 @@ class WakeService : Service() {
         scope.cancel()
         WakeState.set { WakeStatus() }
         WakeTileService.refresh(this)
-        WakeWidget.refresh(this)
         super.onDestroy()
     }
 

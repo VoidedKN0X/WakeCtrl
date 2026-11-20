@@ -101,18 +101,6 @@
                 android:value="true" />
         </service>
 
-        <receiver
-            android:name=".widget.WakeWidget"
-            android:exported="false"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info" />
-        </receiver>
-
         <!-- Automation apps: ON / OFF / TOGGLE broadcasts. Disabled until "Allow other apps" is on in Settings
              (WakeCtrl switches the component on and off with the setting), so while it's off no other app can
              reach it at all; the receiver also checks the setting itself. -->
