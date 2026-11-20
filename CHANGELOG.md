@@ -4,6 +4,27 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not released yet: these changes are built but have no version number. Nothing here was tested on a phone.
+
+### Removed
+
+- **The home-screen widget is gone.** The Ctrl apps no longer have home-screen widgets. A WakeCtrl widget that is still on your home screen stops working after the update; remove it by hand. The **Quick Settings tile stays** and works as before, and so do the launcher shortcut, the on/off button in the notification and the broadcasts for automation apps. With the widget, its once-a-minute alarm for the countdown is gone too.
+
+### Battery
+
+- **Fewer checks while the screen is off.** While WakeCtrl was keeping the screen on (or AppWake or DevWake was switched on) it looked at its automations every 2 seconds, also with the screen off, when there is nothing to hold and no app on screen. With the screen off it now looks every 15 seconds, which still ends the timer, applies the low-battery stop and follows the schedule; charging, Bluetooth and schedule changes arrive on their own as before. When the screen comes on, WakeCtrl looks straight away and returns to the 2-second checks, so keeping the screen on works the same as before.
+- **The Quick Settings tile is asked to refresh only when on/off changed,** instead of on every check.
+
+### Fixed
+
+- **Brightness is put back after Android closes WakeCtrl.** If Android closed WakeCtrl while it had changed the brightness, the phone stayed at that brightness until the next time WakeCtrl held the screen and let go. WakeCtrl now puts your saved brightness back as soon as it starts again and nothing is keeping the screen on.
+
+### Privacy
+
+- **Two crash reports from a build computer were removed from the repository** (`hs_err_pid18424.log`, `replay_pid18424.log`), and files like them are now ignored. They were never part of the app. They are still in the repository's older history.
+
 ## v0.3.1 (2026-11-13)
 
 ### New

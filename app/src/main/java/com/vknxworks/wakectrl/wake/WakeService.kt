@@ -76,6 +76,10 @@ class WakeService : Service() {
     /** While a Schedule window holds the screen: when it ends (epoch ms). */
     private var scheduleUntil = 0L
     private var wasScheduled = false
+    /** What the Quick Settings tile was last told; it's only asked to refresh when this changes. */
+    private var tileActive: Boolean? = null
+    /** Whether a brightness level left behind by a closed WakeCtrl process was looked for (once per start). */
+    private var leftoverBrightnessChecked = false
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = readBattery(intent)
@@ -91,9 +95,19 @@ class WakeService : Service() {
         }
     }
 
-    /** Screen off (power button or timeout): with "Turn off when the screen goes off", end the manual keep-awake. */
+    /**
+     * Screen off (power button or timeout): with "Turn off when the screen goes off", end the manual keep-awake.
+     * Screen on: look straight away and go back to the quick checks (they slow down while the screen is off).
+     */
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_ON) {
+                if (settingsReady && loop?.isActive == true) {
+                    loop?.cancel()
+                    loop = startLoop()
+                }
+                return
+            }
             if (intent.action != Intent.ACTION_SCREEN_OFF || !settingsReady) return
             val s = container.settings.settings.value
             if (s.offWhenScreenOff && manualOn) {
@@ -121,8 +135,15 @@ class WakeService : Service() {
             // System broadcasts still arrive; other apps can't fake them.
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
-        // SCREEN_OFF only reaches receivers registered at runtime; it's a protected system broadcast.
-        ContextCompat.registerReceiver(this, screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_NOT_EXPORTED)
+        // SCREEN_OFF and SCREEN_ON only reach receivers registered at runtime; they're protected system broadcasts.
+        ContextCompat.registerReceiver(
+            this, screenOffReceiver,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_OFF)
+                addAction(Intent.ACTION_SCREEN_ON)
+            },
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         loadConnectedBluetooth()
         WakeState.set { it.copy(running = true) }
     }
@@ -142,17 +163,25 @@ class WakeService : Service() {
                 ACTION_RESUME -> setManual(true, s, getString(R.string.log_source_restart))
             }
             if (loop?.isActive != true) {
-                loop = scope.launch {
-                    while (isActive) {
-                        evaluate()
-                        delay(if (needsPolling()) 2_000L else 15_000L)
-                    }
-                }
+                loop = startLoop()
             } else {
                 evaluate()
             }
         }
         return START_STICKY
+    }
+
+    /**
+     * Looks at the automations again and again: every 2 seconds while the screen is on and something needs a
+     * close watch, every 15 seconds otherwise. With the screen off nothing is held and no app is on screen, so
+     * the slow check is enough (timer, low battery, schedule); turning the screen on starts this again at once.
+     */
+    private fun startLoop(): Job = scope.launch {
+        while (isActive) {
+            evaluate()
+            val quick = needsPolling() && getSystemService(PowerManager::class.java).isInteractive
+            delay(if (quick) 2_000L else 15_000L)
+        }
     }
 
     private fun setManual(on: Boolean, s: AppSettings, source: String?) {
@@ -243,6 +272,12 @@ class WakeService : Service() {
 
         val wasActive = holding != null
         if (reasons.isNotEmpty()) hold(s) else release()
+        if (!leftoverBrightnessChecked) {
+            leftoverBrightnessChecked = true
+            // WakeCtrl was closed by Android while it had the brightness changed: put the saved level back now
+            // that nothing holds the screen. (When something does, the saved level is put back when it lets go.)
+            if (!wasActive && reasons.isEmpty()) restoreBrightness()
+        }
         if (!wasActive && reasons.isNotEmpty() && Reason.MANUAL !in reasons) {
             ActivityLog.add(getString(R.string.log_auto_on, reasons.joinToString { reasonText(it) }))
         } else if (wasActive && reasons.isEmpty()) {
@@ -268,7 +303,12 @@ class WakeService : Service() {
             )
         }
         updateNotification(reasons)
-        WakeTileService.refresh(this)
+        // The tile only shows on or off: ask it to refresh when that changed, not on every check.
+        val active = reasons.isNotEmpty()
+        if (tileActive != active) {
+            tileActive = active
+            WakeTileService.refresh(this)
+        }
 
         // After a low-battery stop, stay (with a notification saying so) until the phone charges, so turning it
         // on again counts as overriding the stop.
