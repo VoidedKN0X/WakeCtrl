@@ -33,6 +33,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Activity log:** what WakeCtrl did and why, kept on the phone
 - **Keeps the screen on with a renewed screen wake lock** (a fresh short lock every 10 seconds, only while the screen is on and the phone unlocked): it works on strict phones like ColorOS, with no overlay and no "Display over other apps" permission. Settings shows what still helps on strict phones
 - **App lock** with its own PIN and optional fingerprint unlock, and **Hide in screenshots** / **Hide in recent apps** (all off until you turn them on)
+- **English and Dutch**, following your phone's language
 - **Ctrl / Signal look**, shared by every Ctrl app: dark and light, following your phone's dark theme setting, high contrast, one violet accent, Space Grotesk and JetBrains Mono; landscape, tablet and foldable layouts
 
 ## Requirements

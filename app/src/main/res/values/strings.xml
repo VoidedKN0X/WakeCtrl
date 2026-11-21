@@ -38,7 +38,7 @@
     <string name="timer_custom_field">Minutes</string>
     <string name="timer_custom_range">A whole number of minutes, 1 to %1$d</string>
     <string name="timer_custom_choice">Other length…</string>
-    <string name="timer_hours_minutes">%1$s %2$s</string>
+    <string name="timer_hours_minutes" translatable="false">%1$s %2$s</string>
     <plurals name="timer_minutes">
         <item quantity="one">%1$d minute</item>
         <item quantity="other">%1$d minutes</item>
@@ -104,7 +104,7 @@
     <string name="schedule_wake_footer">A window that ends at or before its start time runs past midnight and ends the next day; the days are the days it starts. Times follow your phone\'s clock, also after a time zone or daylight-saving change.</string>
     <string name="schedule_add">Add time window</string>
     <string name="schedule_none">No time windows yet</string>
-    <string name="schedule_window">%1$s–%2$s</string>
+    <string name="schedule_window" translatable="false">%1$s–%2$s</string>
     <string name="schedule_next_day">%1$s · ends the next day</string>
     <string name="schedule_whole_day">%1$s · all day</string>
     <string name="schedule_days_every">Every day</string>

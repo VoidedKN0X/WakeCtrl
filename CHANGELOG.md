@@ -19,6 +19,8 @@ Built and checked by CI only: none of this had been run on a phone yet.
 - **Stop when the battery is hot** (Settings → Battery): never (default), or at 40, 42 or 45 °C. WakeCtrl then lets go, turns your own keep-awake off, sends an alert and leaves automations alone until the battery is 3 °C below the limit again. Turning it on yourself during that time overrides the stop until it has cooled down, like the low-battery stop.
 - **Export and import of settings and automations** (Settings → Export and import). Export saves a JSON file where you choose with your timer, screen and battery settings and all automations (chosen apps, Bluetooth devices, time windows, per-app options). Import reads such a file, shows how many apps, devices and time windows you'll have afterwards and asks before replacing anything. The app lock, Hide in screenshots, Hide in recent apps and **Allow other apps** are not in the file and an import never changes them. Invalid values in a file are skipped.
 
+- **WakeCtrl in Dutch.** When your phone is set to Dutch (Nederlands), WakeCtrl now shows every screen, notification, the tile and the activity log in Dutch (Belgian Dutch, informal "je"); in any other language it stays in English. It follows the phone's language setting (also Android's per-app language setting), with no language choice inside the app. Feature names such as AppWake and ChargeWake, units and the app name stay as they are. Lines already in the activity log keep the language they were written in.
+
 ### Changed
 
 - The alert notification channel's description now also mentions the hot-battery stop.
