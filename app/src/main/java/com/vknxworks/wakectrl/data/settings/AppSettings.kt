@@ -7,10 +7,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.vknxworks.wakectrl.R
+import com.vknxworks.wakectrl.wake.AppTimerRule
+import com.vknxworks.wakectrl.wake.TimerRule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,6 +45,16 @@ enum class WakeTimer(@StringRes val label: Int, val minutes: Int) {
     M30(R.string.timer_30, 30),
     H1(R.string.timer_60, 60),
     H2(R.string.timer_120, 120),
+    /** Your own length ([AppSettings.customTimerMinutes]). */
+    CUSTOM(R.string.timer_custom, -1),
+}
+
+/** Stop keeping the screen on when the battery gets this hot (and let automations wait until it cools down). */
+enum class HeatStop(@StringRes val label: Int, val celsius: Int) {
+    OFF(R.string.heat_off, 0),
+    C40(R.string.heat_40, 40),
+    C42(R.string.heat_42, 42),
+    C45(R.string.heat_45, 45),
 }
 
 /** Stop keeping the screen on when the battery falls to this level (and the phone isn't charging). */
@@ -63,10 +76,20 @@ enum class Brightness(@StringRes val label: Int, val percent: Int) {
 
 data class AppSettings(
     val timer: WakeTimer = WakeTimer.NONE,
+    /** The length of the "Custom" timer, 1 to 1440 minutes. */
+    val customTimerMinutes: Int = 45,
+    /** Quick Settings tile: each tap moves to the next of [tileSteps]; after the last, it turns off. */
+    val tileCycle: Boolean = false,
+    /** The lengths the tile cycles through, in minutes (0: no limit), shortest first and "no limit" last. */
+    val tileSteps: List<Int> = DEFAULT_TILE_STEPS,
     /** Let the screen dim when idle instead of holding it at full brightness. */
     val allowDim: Boolean = false,
     val brightness: Brightness = Brightness.UNCHANGED,
     val lowBattery: LowBattery = LowBattery.OFF,
+    /** Stop when the battery gets hot. */
+    val heatStop: HeatStop = HeatStop.OFF,
+    /** Pocket guard: let the screen sleep while the proximity sensor is covered. */
+    val pocketGuard: Boolean = false,
     /** Remind after 3 hours on battery. */
     val longReminder: Boolean = true,
     /** Turn the manual keep-awake off when the screen goes off (power button or the phone's own timeout). */
@@ -77,10 +100,18 @@ data class AppSettings(
     val appWakePackages: Set<String> = emptySet(),
     /** AppWake apps that keep the screen on only while the phone is also charging. */
     val appWakeChargingOnly: Set<String> = emptySet(),
+    /** AppWake apps with a time limit: package → minutes the screen is kept on each time the app comes on screen. */
+    val appWakeTimers: Map<String, Int> = emptyMap(),
     val chargeWake: Boolean = false,
     val btWake: Boolean = false,
     val btWakeDevices: Set<String> = emptySet(),
     val devWake: Boolean = false,
+    /** MediaWake: while music, a podcast or a video is playing on the phone. */
+    val mediaWake: Boolean = false,
+    /** DockWake: while Android reports the phone as docked (desk or car dock). */
+    val dockWake: Boolean = false,
+    /** HeadsetWake: while headphones or a headset are connected (wired, USB or Bluetooth). */
+    val headsetWake: Boolean = false,
     /** Schedule: keep the screen on during set hours. */
     val scheduleWake: Boolean = false,
     val scheduleWindows: List<com.vknxworks.wakectrl.wake.ScheduleWindow> = emptyList(),
@@ -93,15 +124,32 @@ data class AppSettings(
     /** "Hide in recent apps": the Recents view shows a blank card. Screenshots still work. */
     val hideRecents: Boolean = false,
 ) {
+    /** The manual timer's length in minutes, 0 for no limit. */
+    val timerMinutes: Int
+        get() = if (timer == WakeTimer.CUSTOM) customTimerMinutes else timer.minutes
+
     /** Any automation that needs WakeCtrl to watch in the background. */
     val anyAutomation: Boolean
         get() = (appWake && appWakePackages.isNotEmpty()) || chargeWake || (btWake && btWakeDevices.isNotEmpty()) || devWake ||
-            (scheduleWake && scheduleWindows.any { it.days.isNotEmpty() })
+            (scheduleWake && scheduleWindows.any { it.days.isNotEmpty() }) || mediaWake || dockWake || headsetWake
+
+    companion object {
+        val DEFAULT_TILE_STEPS = listOf(15, 30, 60, 0)
+    }
 }
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     private object K {
         val timer = stringPreferencesKey("timer")
+        val customTimer = intPreferencesKey("custom_timer_minutes")
+        val tileCycle = booleanPreferencesKey("tile_cycle")
+        val tileSteps = stringPreferencesKey("tile_steps")
+        val heatStop = stringPreferencesKey("heat_stop")
+        val pocketGuard = booleanPreferencesKey("pocket_guard")
+        val appWakeTimers = stringSetPreferencesKey("app_wake_timers")
+        val mediaWake = booleanPreferencesKey("media_wake")
+        val dockWake = booleanPreferencesKey("dock_wake")
+        val headsetWake = booleanPreferencesKey("headset_wake")
         val allowDim = booleanPreferencesKey("allow_dim")
         val brightness = stringPreferencesKey("brightness")
         val lowBattery = stringPreferencesKey("low_battery")
@@ -143,6 +191,15 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
 
     private fun Preferences.toSettings() = AppSettings(
         timer = enumOr(this[K.timer], WakeTimer.NONE),
+        customTimerMinutes = (this[K.customTimer] ?: 45).coerceIn(1, TimerRule.MAX_MINUTES),
+        tileCycle = this[K.tileCycle] ?: false,
+        tileSteps = TimerRule.decodeSteps(this[K.tileSteps])?.let { TimerRule.sortSteps(it) }?.ifEmpty { null } ?: AppSettings.DEFAULT_TILE_STEPS,
+        heatStop = enumOr(this[K.heatStop], HeatStop.OFF),
+        pocketGuard = this[K.pocketGuard] ?: false,
+        appWakeTimers = AppTimerRule.decode(this[K.appWakeTimers]),
+        mediaWake = this[K.mediaWake] ?: false,
+        dockWake = this[K.dockWake] ?: false,
+        headsetWake = this[K.headsetWake] ?: false,
         allowDim = this[K.allowDim] ?: false,
         brightness = enumOr(this[K.brightness], Brightness.UNCHANGED),
         lowBattery = enumOr(this[K.lowBattery], LowBattery.OFF),
@@ -170,6 +227,16 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             context.appDataStore.edit { p ->
                 val s = transform(p.toSettings())
                 p[K.timer] = s.timer.name
+                p[K.customTimer] = s.customTimerMinutes.coerceIn(1, TimerRule.MAX_MINUTES)
+                p[K.tileCycle] = s.tileCycle
+                p[K.tileSteps] = TimerRule.encodeSteps(s.tileSteps.ifEmpty { AppSettings.DEFAULT_TILE_STEPS })
+                p[K.heatStop] = s.heatStop.name
+                p[K.pocketGuard] = s.pocketGuard
+                // Only apps that are still chosen can have a time limit.
+                p[K.appWakeTimers] = AppTimerRule.encode(s.appWakeTimers.filterKeys { it in s.appWakePackages })
+                p[K.mediaWake] = s.mediaWake
+                p[K.dockWake] = s.dockWake
+                p[K.headsetWake] = s.headsetWake
                 p[K.allowDim] = s.allowDim
                 p[K.brightness] = s.brightness.name
                 p[K.lowBattery] = s.lowBattery.name

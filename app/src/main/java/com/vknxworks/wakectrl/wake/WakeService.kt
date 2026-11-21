@@ -21,6 +21,16 @@ import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.media.AudioPlaybackConfiguration
+import android.os.Handler
+import android.os.Looper
 import android.os.BatteryManager
 import android.os.IBinder
 import android.os.PowerManager
@@ -58,6 +68,27 @@ class WakeService : Service() {
 
     private var manualOn = false
     private var manualUntil = 0L
+    /** The length the manual keep-awake was started with (0: no limit). */
+    private var manualMinutes = 0
+    /** Whether the screen was being kept on at the last check (for the activity log). */
+    private var lastActive = false
+    // "Stop when the battery is hot": the last temperature (tenths of °C), whether it counts as hot, whether
+    // WakeCtrl stood down for it, and whether you turned it back on yourself since.
+    private var batteryTenths: Int? = null
+    private var hot = false
+    private var heatStopped = false
+    private var heatOverride = false
+    // MediaWake, DockWake, HeadsetWake.
+    private var docked = false
+    private var headsetConnected = false
+    // Pocket guard.
+    private var pocketCovered = false
+    private var pocketJob: Job? = null
+    private var proximityOn = false
+    // AppWake time limits: the app on screen and since when.
+    private var appTimerPkg: String? = null
+    private var appTimerSince = 0L
+    private var appTimerEnded = false
     private var stoodDown = false
     private var lowBatteryOverride = false
     private var batteryLevel = 100
@@ -84,6 +115,49 @@ class WakeService : Service() {
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = readBattery(intent)
     }
+    private val dockReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            readDock(intent)
+            evaluate()
+        }
+    }
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+    private val audioDevices = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) = readHeadset()
+        override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) = readHeadset()
+    }
+    private val playback = object : AudioManager.AudioPlaybackCallback() {
+        override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) = evaluate()
+    }
+    private val proximity = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val v = event.values.firstOrNull() ?: return
+            // Most proximity sensors only say "near" (0) or "far" (their maximum range); others give centimetres.
+            val near = v < minOf(event.sensor.maximumRange, 5f)
+            if (near) {
+                if (!pocketCovered && pocketJob == null) {
+                    // Covered for a few seconds, not just a hand passing over the top of the phone.
+                    pocketJob = scope.launch {
+                        delay(POCKET_DELAY_MS)
+                        pocketJob = null
+                        pocketCovered = true
+                        ActivityLog.add(getString(R.string.log_pocket_paused))
+                        evaluate()
+                    }
+                }
+            } else {
+                pocketJob?.cancel()
+                pocketJob = null
+                if (pocketCovered) {
+                    pocketCovered = false
+                    ActivityLog.add(getString(R.string.log_pocket_resumed))
+                    evaluate()
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
     private val btReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val device: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java) ?: return
@@ -108,7 +182,10 @@ class WakeService : Service() {
                 }
                 return
             }
-            if (intent.action != Intent.ACTION_SCREEN_OFF || !settingsReady) return
+            if (intent.action != Intent.ACTION_SCREEN_OFF) return
+            // The pocket guard only listens while the screen is on.
+            stopPocketSensor()
+            if (!settingsReady) return
             val s = container.settings.settings.value
             if (s.offWhenScreenOff && manualOn) {
                 setManual(false, s, getString(R.string.log_source_screen_off))
@@ -144,6 +221,14 @@ class WakeService : Service() {
             },
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
+        // Docked or not: a sticky system broadcast, so registering also gives the current state.
+        ContextCompat.registerReceiver(this, dockReceiver, IntentFilter(Intent.ACTION_DOCK_EVENT), ContextCompat.RECEIVER_NOT_EXPORTED)
+            ?.let { readDock(it) }
+        getSystemService(AudioManager::class.java)?.let { audio ->
+            // Both callbacks need no permission. The device callback reports the devices already connected right away.
+            runCatching { audio.registerAudioDeviceCallback(audioDevices, mainHandler) }
+            runCatching { audio.registerAudioPlaybackCallback(playback, mainHandler) }
+        }
         loadConnectedBluetooth()
         WakeState.set { it.copy(running = true) }
     }
@@ -152,14 +237,23 @@ class WakeService : Service() {
         startForeground(NOTIF_ID, buildNotification(lastNotifText ?: getString(R.string.notif_starting)), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         val action = intent?.action
         val source = intent?.getStringExtra(EXTRA_SOURCE)
+        // Only WakeCtrl itself starts this service (it isn't exported); -1 means "use the timer setting".
+        val minutes = intent?.getIntExtra(EXTRA_MINUTES, -1) ?: -1
         scope.launch {
             // After a cold start (boot, tile) the settings may still be loading: read them first.
             val s = container.settings.settingsLoaded()
             settingsReady = true
             when (action) {
-                ACTION_ON -> setManual(true, s, source)
+                ACTION_ON -> setManual(true, s, source, minutes)
                 ACTION_OFF -> setManual(false, s, source)
-                ACTION_TOGGLE -> setManual(!manualOn, s, source)
+                ACTION_TOGGLE -> setManual(!manualOn, s, source, minutes)
+                ACTION_TILE -> if (s.tileCycle) {
+                    // Tap to cycle: off → first length → next … → off.
+                    val next = TimerRule.nextStep(if (manualOn) manualMinutes else null, s.tileSteps)
+                    if (next == null) setManual(false, s, source) else setManual(true, s, source, next)
+                } else {
+                    setManual(!manualOn, s, source)
+                }
                 ACTION_RESUME -> setManual(true, s, getString(R.string.log_source_restart))
             }
             // Look now, and work the wait until the next look out afresh (a timer may just have been set, or
@@ -191,17 +285,35 @@ class WakeService : Service() {
         }
     }
 
-    private fun setManual(on: Boolean, s: AppSettings, source: String?) {
+    /** [minutes]: how long to keep it on (0: no limit), or -1 for the timer setting. */
+    private fun setManual(on: Boolean, s: AppSettings, source: String?, minutes: Int = -1) {
         if (on && stoodDown) {
             // Turning it on yourself after a low-battery stop overrides it until the phone charges.
             stoodDown = false
             lowBatteryOverride = true
         }
-        if (!on) lowBatteryOverride = false
+        if (on && heatStopped) {
+            // Likewise after a hot-battery stop, until the battery has cooled down.
+            heatStopped = false
+            heatOverride = true
+        }
+        if (!on) {
+            lowBatteryOverride = false
+            heatOverride = false
+        }
+        val length = if (minutes >= 0) minutes.coerceAtMost(TimerRule.MAX_MINUTES) else s.timerMinutes
         manualOn = on
-        manualUntil = if (on && s.timer.minutes > 0) System.currentTimeMillis() + s.timer.minutes * 60_000L else 0L
+        manualMinutes = if (on) length else 0
+        manualUntil = if (on && length > 0) System.currentTimeMillis() + length * 60_000L else 0L
         container.appScope.launch { container.settings.setManualOn(on) }
-        ActivityLog.add(getString(if (on) R.string.log_manual_on else R.string.log_manual_off, source ?: getString(R.string.log_source_app)))
+        val from = source ?: getString(R.string.log_source_app)
+        ActivityLog.add(
+            when {
+                !on -> getString(R.string.log_manual_off, from)
+                length > 0 -> getString(R.string.log_manual_on_for, minutesText(this, length), from)
+                else -> getString(R.string.log_manual_on, from)
+            },
+        )
     }
 
     /** AppWake (with apps chosen) or DevWake is on: the app on screen has to be watched closely. */
@@ -236,6 +348,9 @@ class WakeService : Service() {
         var trigger: String? = null
         if (s.chargeWake && charging) reasons += Reason.CHARGING
         if (s.btWake && btConnected.any { it in s.btWakeDevices }) reasons += Reason.BLUETOOTH
+        if (s.mediaWake && isMediaPlaying()) reasons += Reason.MEDIA
+        if (s.dockWake && docked) reasons += Reason.DOCK
+        if (s.headsetWake && headsetConnected) reasons += Reason.HEADSET
         // Schedule: inside one of the set windows (worked out on the wall clock, so DST and time zone changes
         // apply straight away), and an alarm for the next start or end so it switches on time.
         val zNow = java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneId.systemDefault())
@@ -255,9 +370,24 @@ class WakeService : Service() {
         }
         ScheduleAlarm.update(this, s, zNow)
         val fg = foregroundPkg.takeIf { interactive }
+        // An app's time limit counts from when it came on screen (or the screen came on with it).
+        if (fg != appTimerPkg) {
+            appTimerPkg = fg
+            appTimerSince = now
+            appTimerEnded = false
+        }
         if (fg != null && fg != packageName) {
             // Apps set to "Only while charging" count only while the phone charges (a plug change re-evaluates).
-            if (AppWakeRule.keepsOn(fg, s.appWake, s.appWakePackages, s.appWakeChargingOnly, charging)) { reasons += Reason.APP; trigger = fg }
+            if (AppWakeRule.keepsOn(fg, s.appWake, s.appWakePackages, s.appWakeChargingOnly, charging)) {
+                val limit = s.appWakeTimers[fg] ?: 0
+                if (!AppTimerRule.expired(limit, appTimerSince, now)) {
+                    reasons += Reason.APP
+                    trigger = fg
+                } else if (!appTimerEnded) {
+                    appTimerEnded = true
+                    ActivityLog.add(getString(R.string.log_app_timer_done, labelOf(fg), minutesText(this, limit)))
+                }
+            }
             if (s.devWake && isDebuggable(fg)) { reasons += Reason.DEBUG_APP; trigger = fg }
         }
 
@@ -278,8 +408,37 @@ class WakeService : Service() {
             reasons.clear()
         }
 
-        val wasActive = holding != null
-        if (reasons.isNotEmpty()) hold(s) else release()
+        // Hot battery: let go, and leave automations alone until it has cooled down.
+        val nowHot = HeatRule.isHot(hot, batteryTenths, s.heatStop.celsius)
+        if (hot && !nowHot && heatStopped) ActivityLog.add(getString(R.string.log_heat_cooled))
+        hot = nowHot
+        if (!hot) {
+            heatStopped = false
+            heatOverride = false
+        } else if (heatOverride) {
+            // You turned it back on after a hot-battery stop: only your manual keep-awake runs.
+            reasons.retainAll(setOf(Reason.MANUAL))
+        } else {
+            if (reasons.isNotEmpty() && !heatStopped) {
+                heatStopped = true
+                manualOn = false
+                manualUntil = 0
+                container.appScope.launch { container.settings.setManualOn(false) }
+                val celsius = formatCelsius(batteryTenths ?: 0)
+                ActivityLog.add(getString(R.string.log_heat_stop, celsius))
+                alert(ALERT_HEAT, getString(R.string.alert_heat_title), getString(R.string.alert_heat_body, celsius))
+            }
+            if (heatStopped) reasons.clear()
+        }
+
+        // Pocket guard: listen to the proximity sensor only while something keeps the screen on and it's on.
+        val wantPocket = s.pocketGuard && reasons.isNotEmpty() && interactive
+        if (wantPocket) startPocketSensor() else stopPocketSensor()
+        val pocketPaused = pocketCovered && reasons.isNotEmpty()
+
+        val wasActive = lastActive
+        lastActive = reasons.isNotEmpty()
+        if (reasons.isNotEmpty() && !pocketPaused) hold(s) else release()
         if (!leftoverBrightnessChecked) {
             leftoverBrightnessChecked = true
             // WakeCtrl was closed by Android while it had the brightness changed: put the saved level back now
@@ -308,9 +467,11 @@ class WakeService : Service() {
             it.copy(
                 running = true, reasons = reasons, manualUntil = if (manualOn) manualUntil else 0L, method = holding, stoodDown = stoodDown, triggerApp = trigger,
                 scheduleUntil = if (Reason.SCHEDULE in reasons) scheduleUntil else 0L,
+                manualMinutes = if (manualOn) manualMinutes else 0, pocketPaused = pocketPaused, heatStopped = heatStopped,
+                batteryTenths = batteryTenths,
             )
         }
-        updateNotification(reasons)
+        updateNotification(reasons, pocketPaused)
         // The tile only shows on or off: ask it to refresh when that changed, not on every check.
         val active = reasons.isNotEmpty()
         if (tileActive != active) {
@@ -320,7 +481,7 @@ class WakeService : Service() {
 
         // After a low-battery stop, stay (with a notification saying so) until the phone charges, so turning it
         // on again counts as overriding the stop.
-        if (reasons.isEmpty() && !s.anyAutomation && !stoodDown) stopSelf()
+        if (reasons.isEmpty() && !s.anyAutomation && !stoodDown && !heatStopped) stopSelf()
     }
 
     // ---------- Holding the screen ----------
@@ -414,10 +575,14 @@ class WakeService : Service() {
         val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
         val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
         if (level >= 0 && scale > 0) batteryLevel = level * 100 / scale
+        val tenths = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE)
+        if (tenths != Int.MIN_VALUE) batteryTenths = tenths
         val plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
         val was = charging
         charging = plugged != 0
-        if (was != charging && loop != null) evaluate()
+        // Look again straight away when the battery crosses the "hot" line either way.
+        val heatFlip = settingsReady && HeatRule.isHot(hot, batteryTenths, container.settings.settings.value.heatStop.celsius) != hot
+        if ((was != charging || heatFlip) && loop != null) evaluate()
     }
 
     private fun updateForegroundApp() {
@@ -433,6 +598,42 @@ class WakeService : Service() {
             if (e.eventType == UsageEvents.Event.ACTIVITY_RESUMED) foregroundPkg = e.packageName
         }
     }
+
+    private fun readDock(intent: Intent) {
+        docked = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, Intent.EXTRA_DOCK_STATE_UNDOCKED) != Intent.EXTRA_DOCK_STATE_UNDOCKED
+    }
+
+    /** Headphones or a headset: wired, USB, or Bluetooth audio. */
+    private fun readHeadset() {
+        val audio = getSystemService(AudioManager::class.java) ?: return
+        val now = runCatching { audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { it.type in HEADSET_TYPES } }.getOrDefault(false)
+        if (now != headsetConnected) {
+            headsetConnected = now
+            evaluate()
+        }
+    }
+
+    private fun isMediaPlaying(): Boolean = runCatching { getSystemService(AudioManager::class.java)?.isMusicActive == true }.getOrDefault(false)
+
+    private fun startPocketSensor() {
+        if (proximityOn) return
+        val sm = getSystemService(SensorManager::class.java) ?: return
+        val sensor = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY, false) ?: sm.getDefaultSensor(Sensor.TYPE_PROXIMITY) ?: return
+        proximityOn = runCatching { sm.registerListener(proximity, sensor, SensorManager.SENSOR_DELAY_NORMAL) }.getOrDefault(false)
+    }
+
+    private fun stopPocketSensor() {
+        pocketJob?.cancel()
+        pocketJob = null
+        pocketCovered = false
+        if (!proximityOn) return
+        proximityOn = false
+        runCatching { getSystemService(SensorManager::class.java)?.unregisterListener(proximity) }
+    }
+
+    private fun labelOf(pkg: String): String = runCatching {
+        packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+    }.getOrDefault(pkg)
 
     private fun isDebuggable(pkg: String): Boolean = runCatching {
         packageManager.getApplicationInfo(pkg, 0).flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
@@ -469,13 +670,18 @@ class WakeService : Service() {
                 Reason.BLUETOOTH -> R.string.reason_bluetooth
                 Reason.DEBUG_APP -> R.string.reason_debug
                 Reason.SCHEDULE -> R.string.reason_schedule
+                Reason.MEDIA -> R.string.reason_media
+                Reason.DOCK -> R.string.reason_dock
+                Reason.HEADSET -> R.string.reason_headset
             },
         )
     }
 
-    private fun updateNotification(reasons: Set<Reason>) {
+    private fun updateNotification(reasons: Set<Reason>, pocketPaused: Boolean) {
         val text = when {
             stoodDown -> getString(R.string.notif_stood_down)
+            heatStopped -> getString(R.string.notif_heat)
+            pocketPaused -> getString(R.string.notif_pocket)
             reasons.isEmpty() -> getString(R.string.notif_watching)
             manualOn && manualUntil > 0 -> getString(R.string.notif_on_until, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(manualUntil)))
             else -> getString(R.string.notif_on_because, reasons.joinToString { reasonText(it) })
@@ -526,6 +732,12 @@ class WakeService : Service() {
         if (!container.settings.settings.value.scheduleWake) ScheduleAlarm.cancel(this)
         runCatching { unregisterReceiver(batteryReceiver) }
         runCatching { unregisterReceiver(btReceiver) }
+        runCatching { unregisterReceiver(dockReceiver) }
+        getSystemService(AudioManager::class.java)?.let { audio ->
+            runCatching { audio.unregisterAudioDeviceCallback(audioDevices) }
+            runCatching { audio.unregisterAudioPlaybackCallback(playback) }
+        }
+        stopPocketSensor()
         runCatching { unregisterReceiver(screenOffReceiver) }
         scope.cancel()
         WakeState.set { WakeStatus() }
@@ -543,17 +755,30 @@ class WakeService : Service() {
         const val ACTION_TOGGLE = "com.vknxworks.wakectrl.action.TOGGLE"
         const val ACTION_REFRESH = "com.vknxworks.wakectrl.action.REFRESH"
         const val ACTION_RESUME = "com.vknxworks.wakectrl.action.RESUME"
+        /** A tap on the Quick Settings tile: a plain toggle, or the next timer length with "Tap to cycle". */
+        const val ACTION_TILE = "com.vknxworks.wakectrl.action.TILE"
         const val EXTRA_SOURCE = "source"
+        /** How long to keep the screen on, in minutes (0: no limit); WakeCtrl's own intents only. */
+        const val EXTRA_MINUTES = "minutes"
         private const val CHANNEL_STATUS = "status"
         private const val CHANNEL_ALERTS = "alerts"
         private const val NOTIF_ID = 1
         private const val ALERT_LOW_BATTERY = 2
         private const val ALERT_LONG = 3
+        private const val ALERT_HEAT = 4
+        /** The proximity sensor has to stay covered this long before the pocket guard lets the screen sleep. */
+        private const val POCKET_DELAY_MS = 5_000L
+        private val HEADSET_TYPES = setOf(
+            AudioDeviceInfo.TYPE_WIRED_HEADSET, AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_USB_HEADSET,
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLE_HEADSET,
+        )
         private const val LONG_SESSION_MS = 3 * 60 * 60 * 1000L
 
         /** Starts the service with an action. False when Android doesn't allow it right now. */
-        fun send(context: Context, action: String, source: String? = null): Boolean = try {
-            ContextCompat.startForegroundService(context, Intent(context, WakeService::class.java).setAction(action).putExtra(EXTRA_SOURCE, source))
+        fun send(context: Context, action: String, source: String? = null, minutes: Int = -1): Boolean = try {
+            val intent = Intent(context, WakeService::class.java).setAction(action).putExtra(EXTRA_SOURCE, source)
+            if (minutes >= 0) intent.putExtra(EXTRA_MINUTES, minutes)
+            ContextCompat.startForegroundService(context, intent)
             true
         } catch (_: Exception) {
             false

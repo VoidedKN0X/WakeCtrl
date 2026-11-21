@@ -14,7 +14,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Why the screen is being kept on. */
-enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, DEBUG_APP, SCHEDULE }
+enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, DEBUG_APP, SCHEDULE, MEDIA, DOCK, HEADSET }
 
 data class WakeStatus(
     /** The service is running (keeping awake or watching for an automation). */
@@ -30,6 +30,14 @@ data class WakeStatus(
     val triggerApp: String? = null,
     /** While a Schedule window keeps the screen on: when it ends (epoch ms), or 0. */
     val scheduleUntil: Long = 0L,
+    /** The length the manual keep-awake was started with, in minutes (0: no limit); only meaningful while it's on. */
+    val manualMinutes: Int = 0,
+    /** Pocket guard: the proximity sensor is covered, so the screen is allowed to sleep for now. */
+    val pocketPaused: Boolean = false,
+    /** Stopped because the battery got hot; automations wait until it cools down. */
+    val heatStopped: Boolean = false,
+    /** The battery temperature in tenths of a degree Celsius when it was last read, or null. */
+    val batteryTenths: Int? = null,
 ) {
     val active: Boolean get() = reasons.isNotEmpty()
     val manual: Boolean get() = Reason.MANUAL in reasons

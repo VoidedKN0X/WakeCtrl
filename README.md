@@ -13,18 +13,23 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Features
 
 - **Works fully offline.** WakeCtrl doesn't have the internet permission and never goes online. No ads, no account, no in-app purchases
-- **Keep the screen on** with one tap, until you turn it off or for 5, 15 or 30 minutes, 1 or 2 hours, with a live countdown
+- **Keep the screen on** with one tap, until you turn it off or for 5, 15 or 30 minutes, 1 or 2 hours or **a length you type in yourself** (1 minute to 24 hours), with a live countdown
 - **Automations**, each switched on separately:
-  - **AppWake:** while apps you choose are on screen (reading, recipes, maps, presentations), each optionally **only while the phone is charging** (a navigation app on the car charger)
+  - **AppWake:** while apps you choose are on screen (reading, recipes, maps, presentations), each optionally **only while the phone is charging** (a navigation app on the car charger) and with **its own time limit** (for example 30 minutes each time a reading app comes on screen)
   - **ChargeWake:** while the phone is charging
   - **BTWake:** while a paired Bluetooth device you choose is connected (your car, a speaker)
   - **ScheduleWake:** during set hours, for example weekdays 08:00–17:30, with windows that can run past midnight
   - **DevWake:** while a debug build of any app is on screen, for developers
+  - **MediaWake:** while music, a podcast or a video is playing in any app
+  - **DockWake:** while the phone is in a dock that tells Android it's docked (desk and car docks)
+  - **HeadsetWake:** while headphones or a headset are connected (wired, USB-C or Bluetooth)
 - **Screen:** set the brightness while it's on (restored afterwards), or let the screen dim when idle instead of staying bright
-- **Battery care:** stop at a low battery level you pick (10 to 30%), and a reminder after 3 hours on battery. Turn it on again after a low-battery stop to override it until you charge
+- **Pocket guard:** lets the screen sleep while the proximity sensor is covered for a few seconds (in a pocket or face down), and carries on when it's uncovered
+- **Battery care:** stop at a low battery level you pick (10 to 30%), stop when the battery gets hot (40, 42 or 45 °C, until it has cooled down 3 °C), and a reminder after 3 hours on battery. Turn it on again after a low-battery or hot-battery stop to override it until you charge or it cools down
 - **Resume after a restart** if you had it on when the phone went down
-- **Everywhere you need it:** a Quick Settings tile, a launcher shortcut, and an on/off button in the notification
-- **Works with automation apps:** Tasker, Home Assistant, MacroDroid and others can turn it on, off or toggle it with a broadcast, only if you allow it (off by default)
+- **Everywhere you need it:** a Quick Settings tile, a launcher shortcut, and an on/off button in the notification. With **Tap to cycle timers**, each tap on the tile moves to the next length you picked (for example 15 min → 30 min → 1 hour → no limit → off), and the tile shows the length that's running
+- **Works with automation apps:** Tasker, Home Assistant, MacroDroid and others can turn it on, off or toggle it with a broadcast, optionally with a number of minutes, only if you allow it (off by default)
+- **Export and import** your settings and automations to a file you choose, to move them to another phone or keep a copy. The app lock, the privacy settings and "Allow other apps" are never in the file and never changed by an import
 - **Activity log:** what WakeCtrl did and why, kept on the phone
 - **Keeps the screen on with a renewed screen wake lock** (a fresh short lock every 10 seconds, only while the screen is on and the phone unlocked): it works on strict phones like ColorOS, with no overlay and no "Display over other apps" permission. Settings shows what still helps on strict phones
 - **App lock** with its own PIN and optional fingerprint unlock, and **Hide in screenshots** / **Hide in recent apps** (all off until you turn them on)
@@ -47,10 +52,11 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Getting started
 
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
-- **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake or DevWake, then choose the apps, devices or hours. AppWake and DevWake ask you to allow Usage access in Android's settings.
+- **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake, DevWake, MediaWake, DockWake or HeadsetWake, then choose the apps, devices or hours. AppWake and DevWake ask you to allow Usage access in Android's settings.
 - **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
-- **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile, or long-press WakeCtrl's icon for the shortcut.
-- **Settings** (profile picture): brightness, dimming, low battery, reminder, resume after restart, other apps, activity log and privacy.
+- **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile, or long-press WakeCtrl's icon for the shortcut. Switch on **Tap to cycle timers** on the Wake tab to step through timer lengths with the tile.
+- **Other apps:** switch on **Allow other apps** in Settings, then send a broadcast to package `com.vknxworks.wakectrl` with action `com.vknxworks.wakectrl.action.ON`, `.OFF` or `.TOGGLE`. Add a whole-number extra `minutes` (0 to 1440, 0 for no limit) to ON or TOGGLE to keep the screen on for that long instead of the timer; a value outside that range is ignored (and noted in the activity log).
+- **Settings** (profile picture): brightness, dimming, pocket guard, low battery, hot battery, reminder, resume after restart, other apps, export and import, activity log and privacy.
 
 ## Is it safe to install?
 
@@ -111,7 +117,9 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 - Your settings, chosen apps and devices, and the activity log are stored in WakeCtrl's private storage and can't be read by other apps.
 - The activity log is also encrypted on the phone (AES-256-GCM, with a key protected by the phone's secure hardware). Settings, chosen apps and devices are not encrypted, because keeping the screen on has to work right after a restart. If the encrypted log can't be opened, WakeCtrl keeps it and tells you on the activity log screen.
 - Usage access is used only to see which app is on screen while AppWake or DevWake is on; nothing is recorded except the activity log line "app on screen".
-- Other apps can control WakeCtrl only when you switch on **Allow other apps**. While it's off, the part of WakeCtrl that listens for them is switched off in Android itself, so other apps can't reach it at all; it can only turn the screen-on hold on, off or toggle it, and reads nothing else from the request.
+- Other apps can control WakeCtrl only when you switch on **Allow other apps**. While it's off, the part of WakeCtrl that listens for them is switched off in Android itself, so other apps can't reach it at all; it can only turn the screen-on hold on, off or toggle it, and reads nothing from the request except an optional whole number of minutes (0 to 1440).
+- MediaWake only asks Android whether any audio is playing, not what or in which app. HeadsetWake and DockWake only look at whether headphones or a dock are connected. The pocket guard reads the proximity sensor only while WakeCtrl is keeping the screen on and the screen is on. None of this is stored.
+- An exported settings file contains the package names of the apps you chose for AppWake and the addresses of the Bluetooth devices you chose for BTWake; it's saved only where you choose.
 - Android backups don't include WakeCtrl's data, and WakeCtrl is left out of Android's cloud backup and its phone-to-phone transfer.
 - The Support, Report a bug, Source code and Licence links on the You page open in your browser, only when you tap them.
 

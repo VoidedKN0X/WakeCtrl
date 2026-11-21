@@ -113,6 +113,9 @@ fun reasonLabel(r: Reason): String = stringResource(
         Reason.BLUETOOTH -> R.string.reason_bluetooth
         Reason.DEBUG_APP -> R.string.reason_debug
         Reason.SCHEDULE -> R.string.reason_schedule
+        Reason.MEDIA -> R.string.reason_media
+        Reason.DOCK -> R.string.reason_dock
+        Reason.HEADSET -> R.string.reason_headset
     },
 )
 
@@ -155,6 +158,8 @@ fun WakeScreen() {
             Spacer(Modifier.height(6.dp))
             val detail = when {
                 status.stoodDown -> stringResource(R.string.detail_stood_down)
+                status.heatStopped -> stringResource(R.string.detail_heat, com.vknxworks.wakectrl.wake.formatCelsius(status.batteryTenths ?: 0))
+                status.pocketPaused -> stringResource(R.string.detail_pocket)
                 status.manual && status.manualUntil > 0 -> stringResource(R.string.detail_left, formatDuration(status.manualUntil - now))
                 status.active -> stringResource(R.string.detail_because, status.reasons.map { reasonLabel(it) }.joinToString())
                 settings.anyAutomation -> stringResource(R.string.detail_watching)
@@ -174,14 +179,7 @@ fun WakeScreen() {
         )
         Spacer(Modifier.height(20.dp))
 
-        Group(stringResource(R.string.group_timer), footer = stringResource(R.string.timer_footer)) {
-            GroupChoice(
-                stringResource(R.string.timer),
-                WakeTimer.entries.map { it to stringResource(it.label) },
-                settings.timer,
-                icon = Icons.Outlined.Timer,
-            ) { t -> scope.launch { c.settings.update { it.copy(timer = t) } } }
-        }
+        TimerGroup(settings) { transform -> scope.launch { c.settings.update(transform) } }
 
         // What helps WakeCtrl hold the screen reliably.
         key(tick) {
@@ -271,6 +269,7 @@ fun AutomationsScreen() {
             )
         }
         ScheduleGroup(settings, tick) { set(it) }
+        MoreTriggerGroups(settings) { set(it) }
         Group(stringResource(R.string.dev_wake), footer = stringResource(R.string.dev_wake_footer)) {
             GroupSwitch(stringResource(R.string.dev_wake_switch), null, settings.devWake, Icons.Outlined.BugReport) { on -> set { it.copy(devWake = on) } }
             if (settings.devWake && !settings.appWake && !usageOk) UsageAccessRow()
@@ -355,11 +354,15 @@ fun AppPickerScreen() {
                 items(shown, key = { it.pkg }) { a ->
                     val checked = a.pkg in settings.appWakePackages
                     val chargingOnly = checked && a.pkg in settings.appWakeChargingOnly
+                    val limit = if (checked) settings.appWakeTimers[a.pkg] ?: 0 else 0
                     fun flip() {
                         scope.launch {
                             c.settings.update { s ->
-                                if (checked) s.copy(appWakePackages = s.appWakePackages - a.pkg, appWakeChargingOnly = s.appWakeChargingOnly - a.pkg)
-                                else s.copy(appWakePackages = s.appWakePackages + a.pkg)
+                                if (checked) {
+                                    s.copy(appWakePackages = s.appWakePackages - a.pkg, appWakeChargingOnly = s.appWakeChargingOnly - a.pkg, appWakeTimers = s.appWakeTimers - a.pkg)
+                                } else {
+                                    s.copy(appWakePackages = s.appWakePackages + a.pkg)
+                                }
                             }
                             c.refreshWake()
                         }
@@ -404,6 +407,7 @@ fun AppPickerScreen() {
                                 }
                                 CtrlSwitch(chargingOnly, { flipCharging(it) })
                             }
+                            AppTimeLimitRow(a.pkg, limit)
                         }
                     }
                 }

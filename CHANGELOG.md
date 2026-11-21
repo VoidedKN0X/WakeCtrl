@@ -4,6 +4,25 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: none of this had been run on a phone yet.
+
+### New
+
+- **Your own timer length.** Under **Timer** on the Wake tab you can now pick **Custom** and type any number of minutes from 1 to 1440 (24 hours). It's used whenever you turn WakeCtrl on yourself, like the other timer lengths.
+- **Tap to cycle timers on the Quick Settings tile.** A new **Quick Settings tile** group on the Wake tab. With **Tap to cycle timers** on, the first tap on the tile starts the shortest length you picked, each next tap moves to the next one (counting again from that moment) and a tap after the last one turns it off. You choose the lengths yourself (default 15 min → 30 min → 1 hour → no limit). While your own keep-awake runs with a timer, the tile shows its length instead of "On". With the switch off, the tile works exactly as before. This is still the one and only tile in WakeCtrl.
+- **A number of minutes on the automation broadcast.** Other apps (Tasker, Home Assistant, MacroDroid…) can add a whole-number extra `minutes` (0 to 1440; 0 means no limit) to the ON or TOGGLE broadcast, to keep the screen on for that long instead of the timer setting. A value that isn't a whole number in that range is ignored, noted in the activity log, and the normal timer is used. As before, broadcasts are only accepted while **Allow other apps** is on; no other extra is read.
+- **Three more automations:** **MediaWake** (while music, a podcast or a video is playing in any app), **DockWake** (while the phone is in a desk or car dock that tells Android it's docked; an ordinary charger or a magnetic mount doesn't) and **HeadsetWake** (while wired, USB-C or Bluetooth headphones or a headset are connected). They're on the Automations tab, off until you switch them on, and need no new permission. MediaWake only asks Android whether something is playing, not what.
+- **A time limit per app (AppWake).** In **Choose apps**, each chosen app now has a **Time limit** row: no limit (as before), 5, 15 or 30 minutes, 1 or 2 hours, or your own length. With a limit, the app keeps the screen on for that long each time it comes on screen (or the screen comes back on with it); after that the screen turns off as usual and the activity log notes it.
+- **Pocket guard** (Settings → Screen). While it's on and WakeCtrl is keeping the screen on, WakeCtrl watches the proximity sensor: when it stays covered for 5 seconds (in a pocket or face down), WakeCtrl lets go so the screen can turn off by itself, and carries on as soon as it's uncovered. The Wake tab and the notification say when it's paused. The sensor is only used while WakeCtrl is holding the screen and the screen is on. Phones without a proximity sensor say so on the switch.
+- **Stop when the battery is hot** (Settings → Battery): never (default), or at 40, 42 or 45 °C. WakeCtrl then lets go, turns your own keep-awake off, sends an alert and leaves automations alone until the battery is 3 °C below the limit again. Turning it on yourself during that time overrides the stop until it has cooled down, like the low-battery stop.
+- **Export and import of settings and automations** (Settings → Export and import). Export saves a JSON file where you choose with your timer, screen and battery settings and all automations (chosen apps, Bluetooth devices, time windows, per-app options). Import reads such a file, shows how many apps, devices and time windows you'll have afterwards and asks before replacing anything. The app lock, Hide in screenshots, Hide in recent apps and **Allow other apps** are not in the file and an import never changes them. Invalid values in a file are skipped.
+
+### Changed
+
+- The alert notification channel's description now also mentions the hot-battery stop.
+
 ## v0.6.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published. It is the first release built with the new build tools (Android Gradle Plugin 9, stricter code shrinking), so update over your installed version and check that your data and settings are still there.

@@ -31,6 +31,30 @@
     <string name="timer_30">30 minutes</string>
     <string name="timer_60">1 hour</string>
     <string name="timer_120">2 hours</string>
+    <string name="timer_custom">Custom</string>
+    <string name="timer_custom_value">Custom: %1$s</string>
+    <string name="timer_custom_edit">Your length</string>
+    <string name="timer_custom_title">Keep on for</string>
+    <string name="timer_custom_field">Minutes</string>
+    <string name="timer_custom_range">A whole number of minutes, 1 to %1$d</string>
+    <string name="timer_custom_choice">Other length…</string>
+    <string name="timer_hours_minutes">%1$s %2$s</string>
+    <plurals name="timer_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="timer_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="group_tile">Quick Settings tile</string>
+    <string name="tile_cycle">Tap to cycle timers</string>
+    <string name="tile_cycle_sub">Each tap moves to the next length; after the last one the tile turns it off</string>
+    <string name="tile_footer">Without \"Tap to cycle\", a tap turns it on with the timer above and the next tap turns it off. The tile shows the length while it runs.</string>
+    <string name="tile_steps">Lengths to cycle through</string>
+    <string name="tile_steps_note">The first tap starts the shortest. Each length starts counting again from the moment you tap. Keep at least one.</string>
+    <string name="detail_heat">Stopped: the battery is hot (%1$s). Automations resume once it has cooled down.</string>
+    <string name="detail_pocket">Paused: the proximity sensor is covered (in a pocket or face down). It carries on when it\'s uncovered.</string>
     <string name="warn_battery">Tap to set battery use to Unrestricted, so Android doesn\'t stop WakeCtrl in the background.</string>
     <string name="method_wake_lock">WAKE LOCK</string>
     <string name="method_dim">DIMMED</string>
@@ -41,6 +65,9 @@
     <string name="reason_debug">debug build on screen</string>
     <string name="reason_schedule">schedule</string>
     <string name="reason_schedule_until">schedule (until %1$s)</string>
+    <string name="reason_media">media playing</string>
+    <string name="reason_dock">docked</string>
+    <string name="reason_headset">headphones connected</string>
 
     <!-- Automations -->
     <string name="app_wake">AppWake</string>
@@ -48,6 +75,10 @@
     <string name="app_wake_sub">Reading, recipes, maps, presentations…</string>
     <string name="app_wake_footer">WakeCtrl checks which app is on screen with Android\'s Usage access. It only reads the app name, on this phone, and only while the screen is on.</string>
     <string name="choose_apps">Choose apps</string>
+    <string name="app_time_limit">Time limit</string>
+    <string name="app_time_limit_off">No limit: the screen stays on for as long as the app is open</string>
+    <string name="app_time_limit_on">Stays on for %1$s each time the app comes on screen</string>
+    <string name="app_time_limit_none">No limit</string>
     <string name="apps_selected_charging">%1$s · %2$d only while charging</string>
     <string name="app_wake_charging_only">Only while charging</string>
     <string name="app_wake_charging_only_sub">Keeps the screen on for this app only when the phone is also charging</string>
@@ -92,6 +123,15 @@
     <string name="schedule_delete_body">The screen won\'t be kept on during these hours any more.</string>
     <string name="schedule_delete_confirm">Delete</string>
     <string name="schedule_ok">OK</string>
+    <string name="media_wake">MediaWake</string>
+    <string name="media_wake_switch">While media is playing</string>
+    <string name="media_wake_footer">Music, a podcast or a video playing in any app, for example lyrics or a recipe video. WakeCtrl only asks Android whether something is playing, not what.</string>
+    <string name="dock_wake">DockWake</string>
+    <string name="dock_wake_switch">While the phone is docked</string>
+    <string name="dock_wake_footer">Only for docks that tell Android the phone is docked (desk and car docks). An ordinary charger or a magnetic car mount doesn\'t: use ChargeWake for those.</string>
+    <string name="headset_wake">HeadsetWake</string>
+    <string name="headset_wake_switch">While headphones are connected</string>
+    <string name="headset_wake_footer">Wired, USB-C or Bluetooth headphones and headsets. To pick specific Bluetooth devices, use BTWake instead.</string>
     <string name="allow_usage">Allow Usage access</string>
     <string name="allow_usage_sub">Needed to see which app is on screen. Find WakeCtrl in the list and switch it on.</string>
     <string name="allow_notifications">Allow notifications</string>
@@ -118,6 +158,9 @@
     <string name="allow_brightness_sub">Android\'s \"Modify system settings\" for WakeCtrl</string>
     <string name="allow_dim">Allow dimming when idle</string>
     <string name="allow_dim_sub">The screen dims after a while but doesn\'t turn off</string>
+    <string name="pocket_guard">Pocket guard</string>
+    <string name="pocket_guard_sub">Let the screen sleep while the proximity sensor is covered for a few seconds (in a pocket or face down)</string>
+    <string name="pocket_guard_no_sensor">This phone has no proximity sensor, so this does nothing here</string>
     <string name="group_safety">Battery</string>
     <string name="low_battery">Stop at low battery</string>
     <string name="low_battery_off">Never</string>
@@ -125,6 +168,11 @@
     <string name="low_battery_15">At 15%</string>
     <string name="low_battery_20">At 20%</string>
     <string name="low_battery_30">At 30%</string>
+    <string name="heat_stop">Stop when the battery is hot</string>
+    <string name="heat_off">Never</string>
+    <string name="heat_40">At 40 °C</string>
+    <string name="heat_42">At 42 °C</string>
+    <string name="heat_45">At 45 °C</string>
     <string name="off_when_screen_off">Turn off when the screen goes off</string>
     <string name="off_when_screen_off_sub">Switching the screen off ends keeping it awake by hand (tile or app). Automations keep working.</string>
     <string name="log_source_screen_off">screen off</string>
@@ -140,7 +188,26 @@
     <string name="group_automation">Other apps</string>
     <string name="allow_automation">Allow other apps to control WakeCtrl</string>
     <string name="allow_automation_sub">For Tasker, Home Assistant, MacroDroid…</string>
-    <string name="automation_footer">Send a broadcast to com.vknxworks.wakectrl with action com.vknxworks.wakectrl.action.ON, OFF or TOGGLE. While this is off, those requests are ignored and noted in the activity log.</string>
+    <string name="automation_footer">Send a broadcast to com.vknxworks.wakectrl with action com.vknxworks.wakectrl.action.ON, OFF or TOGGLE. Add a whole-number extra \"minutes\" (0 to 1440; 0 means no limit) to ON or TOGGLE to keep the screen on for that long instead of the timer. While this is off, those requests are ignored and noted in the activity log.</string>
+    <string name="backup_title">Export and import</string>
+    <string name="backup_footer">A file with your settings and automations (timer, screen, battery, chosen apps, Bluetooth devices and time windows), to move them to another phone or keep a copy. The app lock, the privacy settings and \"Allow other apps\" aren\'t in it and an import never changes them.</string>
+    <string name="backup_save">Export settings and automations</string>
+    <string name="backup_save_sub">Save them to a file you choose</string>
+    <string name="backup_restore">Import from a file</string>
+    <string name="backup_restore_sub">Replace them with the ones in a WakeCtrl settings file</string>
+    <string name="backup_saved">Settings exported</string>
+    <string name="backup_save_failed">Couldn\'t write the file. Nothing was exported.</string>
+    <string name="backup_read_failed">Couldn\'t read the file. Nothing was changed.</string>
+    <string name="backup_not_valid">That isn\'t a WakeCtrl settings file. Nothing was changed.</string>
+    <string name="backup_too_new">That file comes from a newer WakeCtrl. Update WakeCtrl first. Nothing was changed.</string>
+    <string name="backup_restore_title">Replace your settings?</string>
+    <string name="backup_restore_body">Your timer, screen and battery settings and all your automations will be replaced by the ones in this file (exported %1$s). After the import you\'ll have:\n\n%2$s\n\nThe app lock, the privacy settings and \"Allow other apps\" stay as they are.</string>
+    <string name="backup_restore_confirm">Replace</string>
+    <string name="backup_restored">Settings imported</string>
+    <plurals name="backup_windows">
+        <item quantity="one">%1$d time window</item>
+        <item quantity="other">%1$d time windows</item>
+    </plurals>
     <string name="activity_log">Activity log</string>
     <string name="activity_log_sub">What WakeCtrl did and why, kept on this phone</string>
     <string name="log_empty">Nothing yet</string>
@@ -153,7 +220,7 @@
     <string name="ch_status">Status</string>
     <string name="ch_status_desc">Shows while WakeCtrl keeps the screen on or watches for automations</string>
     <string name="ch_alerts">Alerts</string>
-    <string name="ch_alerts_desc">Low battery and long-session reminders</string>
+    <string name="ch_alerts_desc">Low battery, hot battery and long-session reminders</string>
     <string name="notif_title_on">Keeping the screen on</string>
     <string name="notif_title_watching">Watching for automations</string>
     <string name="notif_starting">Starting…</string>
@@ -161,6 +228,10 @@
     <string name="notif_on_until">Until %1$s</string>
     <string name="notif_on_because">Because: %1$s</string>
     <string name="notif_stood_down">Stopped at low battery until the phone charges</string>
+    <string name="notif_heat">Stopped because the battery is hot, until it cools down</string>
+    <string name="notif_pocket">Paused while the proximity sensor is covered</string>
+    <string name="alert_heat_title">WakeCtrl stopped: hot battery</string>
+    <string name="alert_heat_body">The battery reached %1$s, so the screen can turn off again. Automations resume once it has cooled down.</string>
     <string name="alert_low_battery_title">WakeCtrl stopped at low battery</string>
     <string name="alert_low_battery_body">The battery fell to %1$d%%, so the screen can turn off again. Automations resume once the phone charges.</string>
     <string name="alert_long_title">The screen has been on for 3 hours</string>
@@ -169,6 +240,13 @@
     <!-- Activity log lines -->
     <string name="log_manual_on">Turned on (%1$s)</string>
     <string name="log_manual_off">Turned off (%1$s)</string>
+    <string name="log_manual_on_for">Turned on for %1$s (%2$s)</string>
+    <string name="log_app_timer_done">%1$s: time limit of %2$s reached</string>
+    <string name="log_heat_stop">Stopped at a battery temperature of %1$s</string>
+    <string name="log_heat_cooled">The battery has cooled down</string>
+    <string name="log_pocket_paused">Pocket guard: paused (proximity sensor covered)</string>
+    <string name="log_pocket_resumed">Pocket guard: carrying on</string>
+    <string name="log_automation_bad_minutes">Another app sent a \"minutes\" value that isn\'t a whole number from 0 to 1440; used the timer instead</string>
     <string name="log_auto_on">Kept on: %1$s</string>
     <string name="log_released">Let the screen sleep again</string>
     <string name="log_timer_done">Timer finished</string>

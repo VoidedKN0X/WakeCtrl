@@ -12,6 +12,8 @@ import android.widget.Toast
 import com.vknxworks.wakectrl.R
 import com.vknxworks.wakectrl.container
 import com.vknxworks.wakectrl.wake.ActivityLog
+import com.vknxworks.wakectrl.wake.TimerRule
+import com.vknxworks.wakectrl.wake.minutesText
 import com.vknxworks.wakectrl.wake.WakeService
 import com.vknxworks.wakectrl.wake.WakeState
 import kotlinx.coroutines.cancel
@@ -44,7 +46,8 @@ class WakeTileService : TileService() {
 
     override fun onClick() {
         val on = WakeState.status.value.manual
-        val ok = WakeService.send(this, if (on) WakeService.ACTION_OFF else WakeService.ACTION_ON, getString(R.string.log_source_tile))
+        // The service decides what a tap does: a plain on/off, or the next timer length with "Tap to cycle".
+        val ok = WakeService.send(this, WakeService.ACTION_TILE, getString(R.string.log_source_tile))
         if (!ok) {
             Toast.makeText(this, getString(R.string.start_blocked), Toast.LENGTH_LONG).show()
             return
@@ -56,9 +59,14 @@ class WakeTileService : TileService() {
 
     private fun update(active: Boolean) {
         val tile = qsTile ?: return
+        val status = WakeState.status.value
         tile.state = if (active) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         tile.label = getString(R.string.app_name)
-        tile.subtitle = getString(if (active) R.string.tile_on else R.string.tile_off)
+        // While your own keep-awake runs with a timer, the tile shows its length (handy with "Tap to cycle").
+        tile.subtitle = when {
+            active && status.manual && status.manualMinutes > 0 -> minutesText(this, status.manualMinutes)
+            else -> getString(if (active) R.string.tile_on else R.string.tile_off)
+        }
         tile.updateTile()
     }
 
@@ -81,7 +89,8 @@ class ToggleShortcutActivity : Activity() {
 /**
  * Lets automation apps (Tasker, Home Assistant, MacroDroid…) turn WakeCtrl on and off with an explicit
  * broadcast: com.vknxworks.wakectrl.action.ON / OFF / TOGGLE. The component is disabled (unreachable) while
- * "Allow other apps" is off, and the setting is checked again for every broadcast. Extras are never read.
+ * "Allow other apps" is off, and the setting is checked again for every broadcast. The only extra read is
+ * `minutes` on ON and TOGGLE (a whole number, 0 to 1440); every other extra is ignored.
  */
 class AutomationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -96,7 +105,9 @@ class AutomationReceiver : BroadcastReceiver() {
                 if (!c.settings.settingsLoaded().allowAutomation) {
                     ActivityLog.add(context.getString(R.string.log_automation_blocked))
                 } else {
-                    WakeService.send(context, action, context.getString(R.string.log_source_automation))
+                    val minutes = if (action == WakeService.ACTION_OFF) null else minutesExtra(intent)
+                    if (minutes == INVALID) ActivityLog.add(context.getString(R.string.log_automation_bad_minutes))
+                    WakeService.send(context, action, context.getString(R.string.log_source_automation), minutes?.takeIf { it != INVALID } ?: -1)
                 }
             } finally {
                 pending.finish()
@@ -105,6 +116,19 @@ class AutomationReceiver : BroadcastReceiver() {
     }
 
     companion object {
+        private const val INVALID = -2
+
+        /**
+         * The `minutes` extra: null when there is none, [INVALID] when it isn't a whole number from 0 to 1440 (the
+         * request then uses the timer setting). Read with care: the extras come from another app.
+         */
+        private fun minutesExtra(intent: Intent): Int? = runCatching {
+            val extras = intent.extras ?: return@runCatching null
+            if (!extras.containsKey(WakeService.EXTRA_MINUTES)) return@runCatching null
+            @Suppress("DEPRECATION")
+            TimerRule.parseExtra(extras.get(WakeService.EXTRA_MINUTES)) ?: INVALID
+        }.getOrDefault(INVALID)
+
         /** Turns the receiver on or off to match "Allow other apps" (a no-op when it already matches). */
         fun setEnabled(context: Context, on: Boolean) {
             val pm = context.packageManager

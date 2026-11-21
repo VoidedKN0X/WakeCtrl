@@ -22,6 +22,8 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Password
+import androidx.compose.material.icons.outlined.Sensors
+import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.Composable
@@ -40,6 +42,7 @@ import com.vknxworks.wakectrl.data.lock.LockVault
 import com.vknxworks.wakectrl.data.settings.AppSettings
 import com.vknxworks.wakectrl.data.settings.LockTimeout
 import com.vknxworks.wakectrl.data.settings.Brightness
+import com.vknxworks.wakectrl.data.settings.HeatStop
 import com.vknxworks.wakectrl.data.settings.LowBattery
 import com.vknxworks.wakectrl.ui.common.openSystemPage
 import com.vknxworks.wakectrl.ui.nav.LocalNavigator
@@ -101,6 +104,15 @@ fun SettingsScreen() {
                     )
                 }
                 GroupSwitch(stringResource(R.string.allow_dim), stringResource(R.string.allow_dim_sub), settings.allowDim, Icons.Outlined.Contrast) { on -> set { it.copy(allowDim = on) } }
+                val hasProximity = remember {
+                    context.getSystemService(android.hardware.SensorManager::class.java)?.getDefaultSensor(android.hardware.Sensor.TYPE_PROXIMITY) != null
+                }
+                GroupSwitch(
+                    stringResource(R.string.pocket_guard),
+                    stringResource(if (hasProximity) R.string.pocket_guard_sub else R.string.pocket_guard_no_sensor),
+                    settings.pocketGuard,
+                    Icons.Outlined.Sensors,
+                ) { on -> set { it.copy(pocketGuard = on) } }
             }
             Group(stringResource(R.string.group_safety)) {
                 GroupChoice(
@@ -109,6 +121,12 @@ fun SettingsScreen() {
                     settings.lowBattery,
                     icon = Icons.Outlined.BatteryAlert,
                 ) { l -> set { it.copy(lowBattery = l) } }
+                GroupChoice(
+                    stringResource(R.string.heat_stop),
+                    HeatStop.entries.map { it to stringResource(it.label) },
+                    settings.heatStop,
+                    icon = Icons.Outlined.Thermostat,
+                ) { h -> set { it.copy(heatStop = h) } }
                 GroupSwitch(stringResource(R.string.off_when_screen_off), stringResource(R.string.off_when_screen_off_sub), settings.offWhenScreenOff, Icons.Outlined.ScreenLockPortrait) { on -> set { it.copy(offWhenScreenOff = on) } }
                 GroupSwitch(stringResource(R.string.long_reminder), stringResource(R.string.long_reminder_sub), settings.longReminder, Icons.Outlined.NotificationsActive) { on -> set { it.copy(longReminder = on) } }
                 GroupSwitch(stringResource(R.string.resume_restart), stringResource(R.string.resume_restart_sub), settings.resumeAfterRestart, Icons.Outlined.RestartAlt) { on -> set { it.copy(resumeAfterRestart = on) } }
@@ -127,6 +145,7 @@ fun SettingsScreen() {
             Group(stringResource(R.string.group_automation), footer = stringResource(R.string.automation_footer)) {
                 GroupSwitch(stringResource(R.string.allow_automation), stringResource(R.string.allow_automation_sub), settings.allowAutomation, Icons.Outlined.Hub) { on -> set { it.copy(allowAutomation = on) } }
             }
+            BackupGroup()
             Group {
                 GroupRow(
                     stringResource(R.string.activity_log),
