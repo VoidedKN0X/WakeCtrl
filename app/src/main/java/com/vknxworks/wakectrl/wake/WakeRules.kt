@@ -118,3 +118,16 @@ object AppTimerRule {
     fun encode(timers: Map<String, Int>): Set<String> =
         timers.filter { (pkg, m) -> pkg.isNotBlank() && '=' !in pkg && m in 1..TimerRule.MAX_MINUTES }.map { (pkg, m) -> "$pkg=$m" }.toSet()
 }
+
+/**
+ * A manual keep-awake that was running when Android restarted the service, worked out without Android so it can be
+ * unit-tested. [until] is when it ends (epoch ms, 0: no limit); [minutes] the length it was started with.
+ */
+object ManualResumeRule {
+    /** Whether a keep-awake saved as ([on], [until]) still runs at [now]. */
+    fun stillRuns(on: Boolean, until: Long, now: Long): Boolean = on && (until <= 0L || until > now)
+
+    /** Whole minutes left (rounded up, for the activity log); 0 for no limit. */
+    fun minutesLeft(until: Long, now: Long): Int =
+        if (until <= 0L) 0 else (((until - now).coerceAtLeast(0L) + 59_999L) / 60_000L).toInt()
+}

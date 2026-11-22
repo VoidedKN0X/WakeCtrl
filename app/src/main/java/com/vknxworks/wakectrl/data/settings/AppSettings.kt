@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -170,6 +171,9 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val hideScreenshots = booleanPreferencesKey("hide_screenshots")
         val hideRecents = booleanPreferencesKey("hide_recents")
         val manualOn = booleanPreferencesKey("manual_on")
+        /** When the manual keep-awake ends (epoch ms, 0: no limit) and how long it was started for (minutes). */
+        val manualUntil = longPreferencesKey("manual_until")
+        val manualMinutes = intPreferencesKey("manual_minutes")
     }
 
     private val prefs: Flow<Preferences> = context.appDataStore.data.catch { e ->
@@ -179,6 +183,14 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     val settings: StateFlow<AppSettings> = prefs
         .map { it.toSettings() }
         .stateIn(scope, SharingStarted.Eagerly, AppSettings())
+
+    /**
+     * True once [settings] holds the saved settings instead of the placeholder defaults. Until then the window stays
+     * hidden from screenshots and Recents, so "Hide in…" can't lapse for a moment at start-up.
+     */
+    val loaded: StateFlow<Boolean> = prefs
+        .map { true }
+        .stateIn(scope, SharingStarted.Eagerly, false)
 
     /** The stored settings, read from storage (for receivers that run before [settings] has loaded). */
     suspend fun settingsLoaded(): AppSettings = prefs.first().toSettings()
@@ -262,11 +274,33 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         }
     }
 
-    suspend fun setManualOn(on: Boolean) {
+    /**
+     * Saves the manual keep-awake: whether it runs, when it ends ([until], epoch ms, 0: no limit) and the length it
+     * was started with ([minutes]), so it can carry on if Android restarts the service.
+     */
+    suspend fun setManualOn(on: Boolean, until: Long = 0L, minutes: Int = 0) {
         try {
-            context.appDataStore.edit { it[K.manualOn] = on }
+            context.appDataStore.edit {
+                it[K.manualOn] = on
+                if (on) {
+                    it[K.manualUntil] = until
+                    it[K.manualMinutes] = minutes
+                } else {
+                    it.remove(K.manualUntil)
+                    it.remove(K.manualMinutes)
+                }
+            }
         } catch (_: IOException) {
         }
+    }
+
+    /**
+     * The saved manual keep-awake, as (on, until, minutes); see [setManualOn]. minutes is null when only "on" was
+     * saved (by a version before 0.8.2), so it isn't known how long it was meant to run.
+     */
+    suspend fun savedManual(): Triple<Boolean, Long, Int?> {
+        val p = prefs.first()
+        return Triple(p[K.manualOn] ?: false, p[K.manualUntil] ?: 0L, p[K.manualMinutes])
     }
 
     suspend fun clear() {

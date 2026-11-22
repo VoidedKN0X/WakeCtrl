@@ -4,7 +4,7 @@
     <string name="app_lock_subtitle">Beim Öffnen von WakeCtrl nach einer App-PIN (und optional deinem Fingerabdruck) fragen. Der Bildschirm bleibt auch bei gesperrter App an.</string>
     <string name="app_lock_footer">WakeCtrl funktioniert komplett offline: keine Internetberechtigung, keine Analyse, kein Tracking. Deine Einstellungen und das Aktivitätsprotokoll bleiben auf diesem Smartphone.</string>
     <string name="lock_prompt_subtitle">Deine Bildschirmeinstellungen</string>
-    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden. WakeCtrl setzt seine Einstellungen und Automatisierungen zurück, leert das Aktivitätsprotokoll und schaltet die App-Sperre aus.</string>
+    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden. WakeCtrl setzt seine Einstellungen und Automatisierungen zurück, leert das Aktivitätsprotokoll und schaltet die App-Sperre aus. Wenn dein Smartphone eine Displaysperre hat, bestätigst du zuerst damit.</string>
     <string name="tab_wake">Wach</string>
     <string name="tab_automations">Automatisierungen</string>
     <string name="hero_label">BILDSCHIRM</string>
@@ -316,4 +316,11 @@
     <string name="lock_again_15m">Nach 15 Minuten Abwesenheit</string>
     <string name="lock_again_1h">Nach 1 Stunde Abwesenheit</string>
     <string name="lock_again_restart">Nur beim Neustart der App</string>
+    <string name="log_source_service_restart">fortgesetzt, nachdem Android WakeCtrl neu gestartet hat</string>
+    <string name="log_start_blocked">Android hat WakeCtrl nicht im Hintergrund starten lassen, daher ging eine Anfrage verloren. Stelle die Akkunutzung von WakeCtrl auf „Nicht eingeschränkt“.</string>
+    <string name="alert_start_blocked_title">WakeCtrl konnte nicht starten</string>
+    <string name="alert_start_blocked_body">Android hat WakeCtrl nicht im Hintergrund starten lassen, daher bleibt der Bildschirm nicht an. Stelle die Akkunutzung von WakeCtrl auf „Nicht eingeschränkt“, damit das nicht wieder passiert.</string>
+    <string name="lock_reset_prompt_title">App-Sperre von WakeCtrl zurücksetzen</string>
+    <string name="lock_reset_prompt_subtitle">Bestätige mit der Displaysperre deines Smartphones, dass du es bist</string>
+    <string name="lock_reset_prompt_failed">Displaysperre konnte nicht angezeigt werden</string>
 </resources>

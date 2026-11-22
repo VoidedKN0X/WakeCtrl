@@ -53,6 +53,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Date
 
@@ -254,6 +255,9 @@ class WakeService : Service() {
                     setManual(!manualOn, s, source)
                 }
                 ACTION_RESUME -> setManual(true, s, getString(R.string.log_source_restart))
+                // No intent: Android restarted the service after stopping it (START_STICKY). A manual keep-awake
+                // lived only in memory, so carry it on from what was saved, if its time hasn't run out.
+                null -> if (intent == null) resumeAfterServiceRestart(s)
             }
             // Look now, and work the wait until the next look out afresh (a timer may just have been set, or
             // AppWake switched on).
@@ -271,6 +275,7 @@ class WakeService : Service() {
      */
     private fun startLoop(): Job = scope.launch {
         while (isActive) {
+            refreshForegroundApp()
             evaluate()
             delay(
                 PollRule.delayMs(
@@ -284,8 +289,26 @@ class WakeService : Service() {
         }
     }
 
-    /** [minutes]: how long to keep it on (0: no limit), or -1 for the timer setting. */
-    private fun setManual(on: Boolean, s: AppSettings, source: String?, minutes: Int = -1) {
+    /** After Android restarted the service: carries on a saved manual keep-awake, or forgets one that has run out. */
+    private suspend fun resumeAfterServiceRestart(s: AppSettings) {
+        val (on, until, minutes) = container.settings.savedManual()
+        if (!on) return
+        val now = System.currentTimeMillis()
+        if (minutes != null && ManualResumeRule.stillRuns(on, until, now)) {
+            setManual(true, s, getString(R.string.log_source_service_restart), minutes, resumeUntil = until)
+        } else {
+            // Run out while WakeCtrl was stopped (or saved by an older version without its length): forget it, so
+            // a later restart of the phone doesn't bring it back either.
+            container.appScope.launch { container.settings.setManualOn(false) }
+            if (minutes != null) ActivityLog.add(getString(R.string.log_timer_done))
+        }
+    }
+
+    /**
+     * [minutes]: how long to keep it on (0: no limit), or -1 for the timer setting. [resumeUntil]: carrying on a
+     * keep-awake after a service restart, the time it ends (epoch ms); [minutes] is then the length it started with.
+     */
+    private fun setManual(on: Boolean, s: AppSettings, source: String?, minutes: Int = -1, resumeUntil: Long = 0L) {
         if (on && stoodDown) {
             // Turning it on yourself after a low-battery stop overrides it until the phone charges.
             stoodDown = false
@@ -301,15 +324,24 @@ class WakeService : Service() {
             heatOverride = false
         }
         val length = if (minutes >= 0) minutes.coerceAtMost(TimerRule.MAX_MINUTES) else s.timerMinutes
+        val now = System.currentTimeMillis()
         manualOn = on
         manualMinutes = if (on) length else 0
-        manualUntil = if (on && length > 0) System.currentTimeMillis() + length * 60_000L else 0L
-        container.appScope.launch { container.settings.setManualOn(on) }
+        manualUntil = when {
+            !on || length <= 0 -> 0L
+            resumeUntil > 0L -> resumeUntil
+            else -> now + length * 60_000L
+        }
+        val until = manualUntil
+        val savedMinutes = manualMinutes
+        container.appScope.launch { container.settings.setManualOn(on, until, savedMinutes) }
         val from = source ?: getString(R.string.log_source_app)
+        // For a keep-awake carried on after a restart, the log shows the time that is left.
+        val shown = if (on && until > 0L && resumeUntil > 0L) ManualResumeRule.minutesLeft(until, now) else length
         ActivityLog.add(
             when {
                 !on -> getString(R.string.log_manual_off, from)
-                length > 0 -> getString(R.string.log_manual_on_for, minutesText(this, length), from)
+                length > 0 -> getString(R.string.log_manual_on_for, minutesText(this, shown), from)
                 else -> getString(R.string.log_manual_on, from)
             },
         )
@@ -340,7 +372,7 @@ class WakeService : Service() {
 
         val pm = getSystemService(PowerManager::class.java)
         val interactive = pm.isInteractive
-        if (interactive && s.appWake && s.appWakePackages.isNotEmpty()) updateForegroundApp()
+        // The app on screen is looked up by the poll loop ([refreshForegroundApp]), off the main thread.
 
         val reasons = mutableSetOf<Reason>()
         if (manualOn) reasons += Reason.MANUAL
@@ -583,18 +615,36 @@ class WakeService : Service() {
         if ((was != charging || heatFlip) && loop != null) evaluate()
     }
 
-    private fun updateForegroundApp() {
+    /**
+     * Looks up which app is on screen, for AppWake: only with the screen on, AppWake on and apps chosen. The
+     * usage-events query (a call into the system and a list of events) runs off the main thread, which also draws
+     * WakeCtrl's screens; [foregroundPkg] and [lastEventQuery] are only changed back on the main thread.
+     */
+    private suspend fun refreshForegroundApp() {
+        if (!settingsReady) return
+        val s = container.settings.settings.value
+        if (!s.appWake || s.appWakePackages.isEmpty()) return
+        if (getSystemService(PowerManager::class.java)?.isInteractive != true) return
         if (!hasUsageAccess(this)) return
         val usm = getSystemService(UsageStatsManager::class.java) ?: return
         val now = System.currentTimeMillis()
         val from = if (lastEventQuery == 0L) now - 60_000 else lastEventQuery - 1_000
-        lastEventQuery = now
-        val events = usm.queryEvents(from, now)
-        val e = UsageEvents.Event()
-        while (events.hasNextEvent()) {
-            events.getNextEvent(e)
-            if (e.eventType == UsageEvents.Event.ACTIVITY_RESUMED) foregroundPkg = e.packageName
+        val result = withContext(Dispatchers.Default) {
+            runCatching {
+                val events = usm.queryEvents(from, now)
+                val e = UsageEvents.Event()
+                var latest: String? = null
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(e)
+                    if (e.eventType == UsageEvents.Event.ACTIVITY_RESUMED) latest = e.packageName
+                }
+                latest
+            }
         }
+        // A failed query is tried again next time, from the same point.
+        val pkg = result.getOrElse { return }
+        lastEventQuery = now
+        if (pkg != null) foregroundPkg = pkg
     }
 
     private fun readDock(intent: Intent) {
@@ -722,7 +772,8 @@ class WakeService : Service() {
     override fun onDestroy() {
         release()
         // With Schedule on, its alarm stays set so the next window starts WakeCtrl again.
-        if (!container.settings.settings.value.scheduleWake) ScheduleAlarm.cancel(this)
+        // Only once the settings are known: their placeholder defaults say Schedule is off.
+        if (settingsReady && !container.settings.settings.value.scheduleWake) ScheduleAlarm.cancel(this)
         runCatching { unregisterReceiver(batteryReceiver) }
         runCatching { unregisterReceiver(btReceiver) }
         runCatching { unregisterReceiver(dockReceiver) }
@@ -759,6 +810,7 @@ class WakeService : Service() {
         private const val ALERT_LOW_BATTERY = 2
         private const val ALERT_LONG = 3
         private const val ALERT_HEAT = 4
+        private const val ALERT_START_BLOCKED = 5
         /** The proximity sensor has to stay covered this long before the pocket guard lets the screen sleep. */
         private const val POCKET_DELAY_MS = 5_000L
         private val HEADSET_TYPES = setOf(
@@ -775,6 +827,36 @@ class WakeService : Service() {
             true
         } catch (_: Exception) {
             false
+        }
+
+        /**
+         * [send] from a receiver: another app's request, a restart of the phone or the Schedule alarm. When the
+         * service isn't running and WakeCtrl's battery use isn't Unrestricted, Android can refuse to start it from
+         * the background; the request is then lost, so it's written to the activity log and a notification says
+         * how to fix it, instead of nothing happening without a trace.
+         */
+        fun sendFromBackground(context: Context, action: String, source: String? = null, minutes: Int = -1): Boolean {
+            if (send(context, action, source, minutes)) return true
+            ActivityLog.init(context)
+            ActivityLog.add(context.getString(R.string.log_start_blocked))
+            runCatching {
+                if (!context.hasPermission(Manifest.permission.POST_NOTIFICATIONS)) return@runCatching
+                createChannels(context)
+                val open = PendingIntent.getActivity(context, 3, Intent(context, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+                val body = context.getString(R.string.alert_start_blocked_body)
+                context.getSystemService(NotificationManager::class.java).notify(
+                    ALERT_START_BLOCKED,
+                    Notification.Builder(context, CHANNEL_ALERTS)
+                        .setSmallIcon(R.drawable.ic_stat_wake)
+                        .setContentTitle(context.getString(R.string.alert_start_blocked_title))
+                        .setContentText(body)
+                        .setStyle(Notification.BigTextStyle().bigText(body))
+                        .setContentIntent(open)
+                        .setAutoCancel(true)
+                        .build(),
+                )
+            }
+            return false
         }
 
         fun createChannels(context: Context) {

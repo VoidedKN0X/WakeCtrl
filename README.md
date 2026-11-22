@@ -53,7 +53,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
 - **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake, MediaWake, DockWake or HeadsetWake, then choose the apps, devices or hours. AppWake asks you to allow Usage access in Android's settings.
-- **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
+- **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too. Without it, Android can refuse to start WakeCtrl in the background (a request from another app, the Schedule, or resuming after a restart); WakeCtrl then writes that to the activity log and shows a notification, instead of the request vanishing without a trace. If Android stops WakeCtrl while you're keeping the screen on yourself, WakeCtrl carries on with the time that was left when Android starts it again.
 - **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile, or long-press WakeCtrl's icon for the shortcut. Switch on **Tap to cycle timers** on the Wake tab to step through timer lengths with the tile.
 - **Other apps:** switch on **Allow other apps** in Settings, then send a broadcast to package `com.vknxworks.wakectrl` with action `com.vknxworks.wakectrl.action.ON`, `.OFF` or `.TOGGLE`. Add a whole-number extra `minutes` (0 to 1440, 0 for no limit) to ON or TOGGLE to keep the screen on for that long instead of the timer; a value outside that range is ignored (and noted in the activity log).
 - **Settings** (profile picture): brightness, dimming, pocket guard, low battery, hot battery, reminder, resume after restart, other apps, export and import, activity log and privacy.
@@ -105,7 +105,7 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 - **The PIN is never stored.** It's stretched with 600,000 rounds of PBKDF2 and mixed with a key held in the phone's secure hardware.
 - **Wrong PINs:** after 5 tries you wait 30 seconds, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
 - **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts.
-- **Forgot your PIN?** It can't be recovered. The lock screen offers to reset WakeCtrl's settings and automations, clear the activity log and turn the lock off.
+- **Forgot your PIN?** It can't be recovered. The lock screen offers to reset WakeCtrl's settings and automations, clear the activity log and turn the lock off. If your phone has a screen lock, you first confirm with it (your phone's PIN, pattern, password or fingerprint), so someone holding your unlocked phone can't just reset WakeCtrl's lock.
 - **Keeping the screen on carries on** while the app is locked; the tile and notification still work.
 
 **Hide in screenshots** and **Hide in recent apps** (both off by default): the first keeps WakeCtrl out of screenshots and screen recordings, the second shows a blank card in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card.

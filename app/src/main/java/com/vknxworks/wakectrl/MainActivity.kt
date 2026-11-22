@@ -58,8 +58,10 @@ fun CtrlWindow(activity: ComponentActivity, content: @Composable () -> Unit) {
         onDispose { }
     }
     val settings by c.settings.settings.collectAsStateWithLifecycle()
-    val secure = settings.hideScreenshots || lockCovering(c.vault)
-    val blankRecents = settings.hideRecents || c.vault.enabled
+    // Until the saved settings are read, both stay on: the placeholder defaults would lift them for a moment.
+    val loaded by c.settings.loaded.collectAsStateWithLifecycle()
+    val secure = !loaded || settings.hideScreenshots || lockCovering(c.vault)
+    val blankRecents = !loaded || settings.hideRecents || c.vault.enabled
     // No overlays over the lock and PIN screens, and their content hidden from accessibility misuse.
     GuardWindow(lockCovering(c.vault), sensitive = true)
     LaunchedEffect(secure, blankRecents) {

@@ -5,7 +5,7 @@
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) when opening WakeCtrl. Keeping the screen on carries on while it\'s locked.</string>
     <string name="app_lock_footer">WakeCtrl works fully offline: it has no internet permission, analytics or tracking. Your settings and activity log stay on this phone.</string>
     <string name="lock_prompt_subtitle">Your screen settings</string>
-    <string name="lock_forgot_body">The PIN can\'t be recovered. WakeCtrl will reset its settings and automations, clear the activity log and turn the app lock off.</string>
+    <string name="lock_forgot_body">The PIN can\'t be recovered. WakeCtrl will reset its settings and automations, clear the activity log and turn the app lock off. If your phone has a screen lock, you\'ll confirm with it first.</string>
 
     <!-- Tabs -->
     <string name="tab_wake">Wake</string>
@@ -264,4 +264,11 @@
     <string name="start_blocked">Android didn\'t let WakeCtrl start from here. Open WakeCtrl once, then try again.</string>
     <string name="shortcut_toggle_short">Toggle</string>
     <string name="shortcut_toggle_long">Turn keep screen on on or off</string>
+    <string name="log_source_service_restart">carried on after Android restarted WakeCtrl</string>
+    <string name="log_start_blocked">Android didn\'t let WakeCtrl start in the background, so a request was dropped. Set WakeCtrl\'s battery use to Unrestricted.</string>
+    <string name="alert_start_blocked_title">WakeCtrl couldn\'t start</string>
+    <string name="alert_start_blocked_body">Android didn\'t let WakeCtrl start in the background, so the screen isn\'t being kept on. Set WakeCtrl\'s battery use to Unrestricted so this doesn\'t happen again.</string>
+    <string name="lock_reset_prompt_title">Reset WakeCtrl\'s app lock</string>
+    <string name="lock_reset_prompt_subtitle">Use your phone\'s screen lock to confirm it\'s you</string>
+    <string name="lock_reset_prompt_failed">Couldn\'t show the screen lock prompt</string>
 </resources>

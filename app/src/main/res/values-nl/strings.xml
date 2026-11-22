@@ -5,7 +5,7 @@
     <string name="app_lock_subtitle">Vraag een app-pincode (en eventueel je vingerafdruk) wanneer je WakeCtrl opent. Het scherm aanhouden gaat gewoon door terwijl de app vergrendeld is.</string>
     <string name="app_lock_footer">WakeCtrl werkt volledig offline: geen internettoestemming, geen analyse en geen tracking. Je instellingen en het activiteitenlogboek blijven op deze telefoon.</string>
     <string name="lock_prompt_subtitle">Je scherminstellingen</string>
-    <string name="lock_forgot_body">De pincode kan niet hersteld worden. WakeCtrl zet zijn instellingen en automatiseringen terug, wist het activiteitenlogboek en zet de app-vergrendeling uit.</string>
+    <string name="lock_forgot_body">De pincode kan niet hersteld worden. WakeCtrl zet zijn instellingen en automatiseringen terug, wist het activiteitenlogboek en zet de app-vergrendeling uit. Heeft je telefoon een schermvergrendeling, dan bevestig je eerst daarmee.</string>
 
     <string name="tab_wake">Wakker</string>
     <string name="tab_automations">Automatiseringen</string>
@@ -255,4 +255,11 @@
     <string name="start_blocked">Android liet WakeCtrl hier niet starten. Open WakeCtrl één keer en probeer dan opnieuw.</string>
     <string name="shortcut_toggle_short">Aan/uit</string>
     <string name="shortcut_toggle_long">Scherm aanhouden aan- of uitzetten</string>
+    <string name="log_source_service_restart">voortgezet nadat Android WakeCtrl herstartte</string>
+    <string name="log_start_blocked">Android liet WakeCtrl niet op de achtergrond starten, dus een verzoek ging verloren. Zet het batterijgebruik van WakeCtrl op Onbeperkt.</string>
+    <string name="alert_start_blocked_title">WakeCtrl kon niet starten</string>
+    <string name="alert_start_blocked_body">Android liet WakeCtrl niet op de achtergrond starten, dus het scherm wordt niet aan gehouden. Zet het batterijgebruik van WakeCtrl op Onbeperkt, zodat dit niet meer gebeurt.</string>
+    <string name="lock_reset_prompt_title">App-vergrendeling van WakeCtrl resetten</string>
+    <string name="lock_reset_prompt_subtitle">Bevestig met de schermvergrendeling van je telefoon dat jij het bent</string>
+    <string name="lock_reset_prompt_failed">De schermvergrendeling kon niet getoond worden</string>
 </resources>

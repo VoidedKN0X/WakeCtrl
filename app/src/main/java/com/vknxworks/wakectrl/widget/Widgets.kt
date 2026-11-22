@@ -107,7 +107,7 @@ class AutomationReceiver : BroadcastReceiver() {
                 } else {
                     val minutes = if (action == WakeService.ACTION_OFF) null else minutesExtra(intent)
                     if (minutes == INVALID) ActivityLog.add(context.getString(R.string.log_automation_bad_minutes))
-                    WakeService.send(context, action, context.getString(R.string.log_source_automation), minutes?.takeIf { it != INVALID } ?: -1)
+                    WakeService.sendFromBackground(context, action, context.getString(R.string.log_source_automation), minutes?.takeIf { it != INVALID } ?: -1)
                 }
             } finally {
                 pending.finish()
@@ -164,8 +164,8 @@ class BootReceiver : BroadcastReceiver() {
                 com.vknxworks.wakectrl.wake.ScheduleAlarm.forget()
                 val resume = boot && s.resumeAfterRestart && c.settings.wasManualOnNow()
                 when {
-                    resume -> WakeService.send(context, WakeService.ACTION_RESUME)
-                    s.anyAutomation -> WakeService.send(context, WakeService.ACTION_REFRESH)
+                    resume -> WakeService.sendFromBackground(context, WakeService.ACTION_RESUME)
+                    s.anyAutomation -> WakeService.sendFromBackground(context, WakeService.ACTION_REFRESH)
                 }
             } finally {
                 pending.finish()

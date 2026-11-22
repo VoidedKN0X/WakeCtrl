@@ -4,6 +4,26 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here has been run on a phone yet.
+
+### Fixed
+
+- **Keeping the screen on yourself survives Android stopping WakeCtrl.** Phones that close apps in the background (ColorOS and the like) could stop WakeCtrl while "Turn on" was active. Android starts it again by itself, but WakeCtrl had kept your keep-awake only in memory, so it quietly stopped holding the screen, with nothing in the activity log. WakeCtrl now saves when your keep-awake ends and how long it was set for, and after such a restart it carries on with the time that is left (or with no limit, if you set none). The activity log shows a "Turned on … (carried on after Android restarted WakeCtrl)" line. If the time ran out while WakeCtrl was stopped, it stays off, the log says "Timer finished", and a later restart of the phone no longer brings it back either.
+- **Starts that Android refuses are no longer silent.** When WakeCtrl isn't running and its battery use isn't Unrestricted, Android can refuse to start it from the background: for a request from another app (Tasker, Home Assistant…), for the Schedule (its alarm isn't exact without "Alarms and reminders"), or for resuming after the phone restarts. That request used to vanish: the screen wasn't kept on and nothing was written anywhere. Now the activity log gets a line saying Android didn't let WakeCtrl start in the background, and a notification (on the alerts channel, if notifications are allowed) tells you to set WakeCtrl's battery use to Unrestricted. Tapping it opens WakeCtrl.
+- **"Hide in screenshots" and "Hide in recent apps" hold from the first moment.** Right after opening WakeCtrl, for the instant before your settings were read, both protections were briefly lifted. They now stay on until the settings are known, then follow your choice as before.
+- **The Schedule alarm isn't cancelled by mistake.** If WakeCtrl's background service closed before it had read your settings, it took Schedule as off and cancelled the alarm for the next window. It now only does that once your settings are known.
+
+### Changed
+
+- **Smoother while AppWake watches apps.** Every 2 seconds (screen on, AppWake on with apps chosen) WakeCtrl asks Android which app is on screen. That question now runs in the background instead of on the thread that draws WakeCtrl's screens. Nothing changes in what AppWake does; when something else (a Bluetooth device, charging) makes WakeCtrl look again, it uses the app found at most 2 seconds earlier.
+- **The Wake tab does less work while a timer counts down.** Whether battery use is Unrestricted is now asked once each time you return to the tab, not again on every status update.
+
+### Security
+
+- **"Forgot PIN?" now asks for your phone's screen lock.** Before, anyone holding your unlocked phone could tap "Forgot PIN?" on WakeCtrl's lock screen and turn the app lock off without knowing the PIN. Now the reset first asks for your phone's own PIN, pattern, password or fingerprint. If you cancel or it fails, nothing is reset. If your phone has no screen lock at all, the reset works as before, after the same confirmation. The "Forgot your PIN?" dialog says so, in all four languages.
+
 ## v0.8.1 (2026-11-22)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

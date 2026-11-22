@@ -68,7 +68,7 @@ class ScheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION) return
         ScheduleAlarm.forget()
-        WakeService.send(context, WakeService.ACTION_REFRESH)
+        WakeService.sendFromBackground(context, WakeService.ACTION_REFRESH)
     }
 
     companion object {

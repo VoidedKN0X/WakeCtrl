@@ -180,8 +180,11 @@ fun WakeScreen() {
         TimerGroup(settings) { transform -> scope.launch { c.settings.update(transform) } }
 
         // What helps WakeCtrl hold the screen reliably.
+        // Asked once per return to the screen (tick), not on every status change (the timer counts down each second).
+        val batteryOk = remember(tick) {
+            context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
+        }
         key(tick) {
-            val batteryOk = context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
             if (!batteryOk && (settings.anyAutomation || status.active)) {
                 WarningCard(
                     stringResource(R.string.warn_battery),

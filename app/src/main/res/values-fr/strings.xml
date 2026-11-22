@@ -4,7 +4,7 @@
     <string name="app_lock_subtitle">Demander un code PIN de l\'application (et éventuellement votre empreinte) à l\'ouverture de WakeCtrl. L\'écran reste allumé même quand l\'appli est verrouillée.</string>
     <string name="app_lock_footer">WakeCtrl fonctionne entièrement hors ligne : pas d\'autorisation Internet, pas d\'analyse ni de suivi. Vos paramètres et le journal d\'activité restent sur ce téléphone.</string>
     <string name="lock_prompt_subtitle">Vos paramètres d\'écran</string>
-    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré. WakeCtrl réinitialisera ses paramètres et automatisations, effacera le journal d\'activité et désactivera le verrouillage.</string>
+    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré. WakeCtrl réinitialisera ses paramètres et automatisations, effacera le journal d\'activité et désactivera le verrouillage. Si votre téléphone a un verrouillage d\'écran, vous le confirmerez d\'abord avec celui-ci.</string>
     <string name="tab_wake">Éveil</string>
     <string name="tab_automations">Automatisations</string>
     <string name="hero_label">ÉCRAN</string>
@@ -316,4 +316,11 @@
     <string name="lock_again_15m">Après 15 minutes d\'absence</string>
     <string name="lock_again_1h">Après 1 heure d\'absence</string>
     <string name="lock_again_restart">Uniquement au redémarrage de l\'application</string>
+    <string name="log_source_service_restart">poursuivi après le redémarrage de WakeCtrl par Android</string>
+    <string name="log_start_blocked">Android n\'a pas laissé WakeCtrl démarrer en arrière-plan, une demande a donc été perdue. Réglez l\'utilisation de la batterie de WakeCtrl sur Sans restriction.</string>
+    <string name="alert_start_blocked_title">WakeCtrl n\'a pas pu démarrer</string>
+    <string name="alert_start_blocked_body">Android n\'a pas laissé WakeCtrl démarrer en arrière-plan, l\'écran n\'est donc pas maintenu allumé. Réglez l\'utilisation de la batterie de WakeCtrl sur Sans restriction pour que cela ne se reproduise plus.</string>
+    <string name="lock_reset_prompt_title">Réinitialiser le verrouillage de WakeCtrl</string>
+    <string name="lock_reset_prompt_subtitle">Utilisez le verrouillage d\'écran de votre téléphone pour confirmer votre identité</string>
+    <string name="lock_reset_prompt_failed">Impossible d\'afficher le verrouillage d\'écran</string>
 </resources>
