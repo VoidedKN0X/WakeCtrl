@@ -105,7 +105,6 @@ data class AppSettings(
     val chargeWake: Boolean = false,
     val btWake: Boolean = false,
     val btWakeDevices: Set<String> = emptySet(),
-    val devWake: Boolean = false,
     /** MediaWake: while music, a podcast or a video is playing on the phone. */
     val mediaWake: Boolean = false,
     /** DockWake: while Android reports the phone as docked (desk or car dock). */
@@ -130,7 +129,7 @@ data class AppSettings(
 
     /** Any automation that needs WakeCtrl to watch in the background. */
     val anyAutomation: Boolean
-        get() = (appWake && appWakePackages.isNotEmpty()) || chargeWake || (btWake && btWakeDevices.isNotEmpty()) || devWake ||
+        get() = (appWake && appWakePackages.isNotEmpty()) || chargeWake || (btWake && btWakeDevices.isNotEmpty()) ||
             (scheduleWake && scheduleWindows.any { it.days.isNotEmpty() }) || mediaWake || dockWake || headsetWake
 
     companion object {
@@ -162,7 +161,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val chargeWake = booleanPreferencesKey("charge_wake")
         val btWake = booleanPreferencesKey("bt_wake")
         val btWakeDevices = stringSetPreferencesKey("bt_wake_devices")
-        val devWake = booleanPreferencesKey("dev_wake")
+        /** The removed DevWake switch; dropped from saved settings on the next save. */
+        val removedDevWake = booleanPreferencesKey("dev_wake")
         val scheduleWake = booleanPreferencesKey("schedule_wake")
         val scheduleWindows = stringPreferencesKey("schedule_windows")
         val allowAutomation = booleanPreferencesKey("allow_automation")
@@ -212,7 +212,6 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         chargeWake = this[K.chargeWake] ?: false,
         btWake = this[K.btWake] ?: false,
         btWakeDevices = this[K.btWakeDevices] ?: emptySet(),
-        devWake = this[K.devWake] ?: false,
         scheduleWake = this[K.scheduleWake] ?: false,
         scheduleWindows = com.vknxworks.wakectrl.wake.ScheduleMath.decode(this[K.scheduleWindows]),
         allowAutomation = this[K.allowAutomation] ?: false,
@@ -250,7 +249,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
                 p[K.chargeWake] = s.chargeWake
                 p[K.btWake] = s.btWake
                 p[K.btWakeDevices] = s.btWakeDevices
-                p[K.devWake] = s.devWake
+                p.remove(K.removedDevWake)
                 p[K.scheduleWake] = s.scheduleWake
                 p[K.scheduleWindows] = com.vknxworks.wakectrl.wake.ScheduleMath.encode(s.scheduleWindows)
                 p[K.allowAutomation] = s.allowAutomation

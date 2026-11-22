@@ -59,7 +59,6 @@
     <string name="reason_app">app op het scherm</string>
     <string name="reason_charging">aan het opladen</string>
     <string name="reason_bluetooth">Bluetooth-apparaat</string>
-    <string name="reason_debug">debugversie op het scherm</string>
     <string name="reason_schedule">schema</string>
     <string name="reason_schedule_until">schema (tot %1$s)</string>
     <string name="reason_media">media speelt af</string>
@@ -91,9 +90,6 @@
     <string name="no_devices">Geen gekoppelde apparaten</string>
     <string name="no_devices_body">Apparaten die je koppelt in de Bluetooth-instellingen van Android verschijnen hier.</string>
     <string name="open_bt_settings">Bluetooth-instellingen openen</string>
-    <string name="dev_wake">DevWake</string>
-    <string name="dev_wake_switch">Terwijl een debugversie op het scherm staat</string>
-    <string name="dev_wake_footer">Houdt het scherm aan terwijl je apps test die je zelf ontwikkelt (elke app die als debuggable gemarkeerd is). Gebruikt Gebruikstoegang, net als AppWake.</string>
     <string name="schedule_wake">ScheduleWake</string>
     <string name="schedule_wake_switch">Tijdens vaste uren</string>
     <string name="schedule_wake_sub">Hou het scherm aan in de tijdvakken hieronder</string>

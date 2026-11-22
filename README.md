@@ -4,7 +4,7 @@
 
 [![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/WakeCtrl?label=download)](https://github.com/VoidedKN0X/WakeCtrl/releases/latest) ![Android 15+](https://img.shields.io/badge/Android-15%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) ![Telemetry-free](https://img.shields.io/badge/telemetry-none-brightgreen) ![Offline](https://img.shields.io/badge/internet-none-brightgreen) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
 
-WakeCtrl stops your screen from turning off while you read, cook, follow a map or present. Turn it on yourself, with an optional timer. Or let it switch on by itself while certain apps are open, while the phone charges, while your car or speaker is connected, during set hours, or while a debug build is on screen. It never goes online.
+WakeCtrl stops your screen from turning off while you read, cook, follow a map or present. Turn it on yourself, with an optional timer. Or let it switch on by itself while certain apps are open, while the phone charges, while your car or speaker is connected or during set hours. It never goes online.
 
 Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
@@ -19,7 +19,6 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
   - **ChargeWake:** while the phone is charging
   - **BTWake:** while a paired Bluetooth device you choose is connected (your car, a speaker)
   - **ScheduleWake:** during set hours, for example weekdays 08:00–17:30, with windows that can run past midnight
-  - **DevWake:** while a debug build of any app is on screen, for developers
   - **MediaWake:** while music, a podcast or a video is playing in any app
   - **DockWake:** while the phone is in a dock that tells Android it's docked (desk and car docks)
   - **HeadsetWake:** while headphones or a headset are connected (wired, USB-C or Bluetooth)
@@ -53,7 +52,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Getting started
 
 - **Wake:** tap **Keep screen on**. Pick a time under **Timer** first if you want it to stop by itself.
-- **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake, DevWake, MediaWake, DockWake or HeadsetWake, then choose the apps, devices or hours. AppWake and DevWake ask you to allow Usage access in Android's settings.
+- **Automations:** switch on AppWake, ChargeWake, BTWake, ScheduleWake, MediaWake, DockWake or HeadsetWake, then choose the apps, devices or hours. AppWake asks you to allow Usage access in Android's settings.
 - **Reliability:** on phones that close apps in the background (OPPO, OnePlus, Samsung, Xiaomi…), allow **Unrestricted battery use**. WakeCtrl shows a card when it's missing; Settings shows it too.
 - **Quick Settings tile:** edit your Quick Settings and drag in the WakeCtrl tile, or long-press WakeCtrl's icon for the shortcut. Switch on **Tap to cycle timers** on the Wake tab to step through timer lengths with the tile.
 - **Other apps:** switch on **Allow other apps** in Settings, then send a broadcast to package `com.vknxworks.wakectrl` with action `com.vknxworks.wakectrl.action.ON`, `.OFF` or `.TOGGLE`. Add a whole-number extra `minutes` (0 to 1440, 0 for no limit) to ON or TOGGLE to keep the screen on for that long instead of the timer; a value outside that range is ignored (and noted in the activity log).
@@ -83,7 +82,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 | --- | --- |
 | Keep the device awake | The fallback method, and "Allow dimming". |
 | Foreground service (special use), notifications | Running while it holds the screen or watches your automations, with the status notification and its on/off button. |
-| Usage access (*you allow it*) | AppWake and DevWake: which app is on screen. Only the app's name, only while the screen is on, never stored or sent. |
+| Usage access (*you allow it*) | AppWake: which app is on screen. Only the app's name, only while the screen is on, never stored or sent. |
 | Nearby devices (Bluetooth) | BTWake: which of your paired devices is connected. |
 | Modify system settings (*you allow it*) | Only for "Brightness while on"; your brightness is restored afterwards. |
 | Run at start-up | Resume after a restart, and keep your automations running. |
@@ -117,7 +116,7 @@ Turn it on under **Settings > Privacy and security > App lock** (tap your profil
 
 - Your settings, chosen apps and devices, and the activity log are stored in WakeCtrl's private storage and can't be read by other apps.
 - The activity log is also encrypted on the phone (AES-256-GCM, with a key protected by the phone's secure hardware). Settings, chosen apps and devices are not encrypted, because keeping the screen on has to work right after a restart. If the encrypted log can't be opened, WakeCtrl keeps it and tells you on the activity log screen.
-- Usage access is used only to see which app is on screen while AppWake or DevWake is on; nothing is recorded except the activity log line "app on screen".
+- Usage access is used only to see which app is on screen while AppWake is on; nothing is recorded except the activity log line "app on screen".
 - Other apps can control WakeCtrl only when you switch on **Allow other apps**. While it's off, the part of WakeCtrl that listens for them is switched off in Android itself, so other apps can't reach it at all; it can only turn the screen-on hold on, off or toggle it, and reads nothing from the request except an optional whole number of minutes (0 to 1440).
 - MediaWake only asks Android whether any audio is playing, not what or in which app. HeadsetWake and DockWake only look at whether headphones or a dock are connected. The pocket guard reads the proximity sensor only while WakeCtrl is keeping the screen on and the screen is on. None of this is stored.
 - An exported settings file contains the package names of the apps you chose for AppWake and the addresses of the Bluetooth devices you chose for BTWake; it's saved only where you choose.

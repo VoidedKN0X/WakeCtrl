@@ -12,7 +12,7 @@ object AppWakeRule {
 
 /** How long the service waits before it looks at its automations again, worked out without Android so it can be unit-tested. */
 object PollRule {
-    /** While AppWake or DevWake has to notice the app on screen changing. */
+    /** While AppWake has to notice the app on screen changing. */
     const val QUICK_MS = 2_000L
 
     /** Otherwise: charging, Bluetooth and the schedule announce themselves, so this only catches the battery level and the long-session reminder. */
@@ -20,7 +20,7 @@ object PollRule {
     private const val MIN_MS = 250L
 
     /**
-     * [watchingApps]: AppWake (with apps chosen) or DevWake is on. [manualUntil] and [scheduleUntil] are the moments
+     * [watchingApps]: AppWake is on with apps chosen. [manualUntil] and [scheduleUntil] are the moments
      * (epoch ms, 0 for none) the timer and the current schedule window end: the wait never runs past the nearest
      * one that is still ahead, so both end on time.
      */

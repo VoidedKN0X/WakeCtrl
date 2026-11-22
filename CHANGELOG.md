@@ -4,6 +4,13 @@ What changed in each WakeCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Removed
+
+- **DevWake.** The "DevWake" group on the Automations tab is gone, with its "While a debug build is on screen" switch, and WakeCtrl no longer checks whether the app on screen is a debug build. The "debug build on screen" reason no longer appears in the notification or on the main screen. If you had DevWake on, it simply stops: the saved setting is dropped the next time a setting changes, and a settings file exported by an earlier version that still contains it imports without an error and the entry is ignored. With DevWake gone, Usage access is only asked for and used by AppWake. Nothing else changes: AppWake, ChargeWake, BTWake, ScheduleWake, MediaWake, DockWake, HeadsetWake, the Quick Settings tile and the activity log work as before.
+- **Leftover log lines stripped from release builds.** The release build now also removes warning, error and other system-log calls from the code it ships (WakeCtrl itself had none), so nothing ends up in the phone's system log.
+
 ## v0.8.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

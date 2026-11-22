@@ -30,7 +30,6 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.BatteryAlert
 import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.Bluetooth
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.DataUsage
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LightMode
@@ -111,7 +110,6 @@ fun reasonLabel(r: Reason): String = stringResource(
         Reason.APP -> R.string.reason_app
         Reason.CHARGING -> R.string.reason_charging
         Reason.BLUETOOTH -> R.string.reason_bluetooth
-        Reason.DEBUG_APP -> R.string.reason_debug
         Reason.SCHEDULE -> R.string.reason_schedule
         Reason.MEDIA -> R.string.reason_media
         Reason.DOCK -> R.string.reason_dock
@@ -213,7 +211,7 @@ fun requestUnrestrictedBattery(context: android.content.Context) {
 fun appLabel(pm: PackageManager, pkg: String): String =
     runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
 
-/** The Automations tab: AppWake, ChargeWake, BTWake, ScheduleWake and DevWake. */
+/** The Automations tab: AppWake, ChargeWake, BTWake, ScheduleWake, MediaWake, DockWake and HeadsetWake. */
 @Composable
 fun AutomationsScreen() {
     val context = LocalContext.current
@@ -247,7 +245,7 @@ fun AutomationsScreen() {
                 showChevron = true,
                 onClick = { nav.navigate(AppPickerRoute) },
             )
-            if ((settings.appWake || settings.devWake) && !usageOk) UsageAccessRow()
+            if (settings.appWake && !usageOk) UsageAccessRow()
         }
         Group(stringResource(R.string.charge_wake), footer = stringResource(R.string.charge_wake_footer)) {
             GroupSwitch(stringResource(R.string.charge_wake_switch), null, settings.chargeWake, Icons.Outlined.BatteryChargingFull) { on -> set { it.copy(chargeWake = on) } }
@@ -270,10 +268,6 @@ fun AutomationsScreen() {
         }
         ScheduleGroup(settings, tick) { set(it) }
         MoreTriggerGroups(settings) { set(it) }
-        Group(stringResource(R.string.dev_wake), footer = stringResource(R.string.dev_wake_footer)) {
-            GroupSwitch(stringResource(R.string.dev_wake_switch), null, settings.devWake, Icons.Outlined.BugReport) { on -> set { it.copy(devWake = on) } }
-            if (settings.devWake && !settings.appWake && !usageOk) UsageAccessRow()
-        }
         val notificationsOk = remember(tick) { context.hasPermission(Manifest.permission.POST_NOTIFICATIONS) }
         if (!notificationsOk) {
             Group {

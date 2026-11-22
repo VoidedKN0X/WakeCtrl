@@ -56,7 +56,6 @@
     <string name="reason_app">App auf dem Bildschirm</string>
     <string name="reason_charging">lädt</string>
     <string name="reason_bluetooth">Bluetooth-Gerät</string>
-    <string name="reason_debug">Debug-Build auf dem Bildschirm</string>
     <string name="reason_schedule">Zeitplan</string>
     <string name="reason_schedule_until">Zeitplan (bis %1$s)</string>
     <string name="reason_media">Medienwiedergabe</string>
@@ -87,9 +86,6 @@
     <string name="no_devices">Keine gekoppelten Geräte</string>
     <string name="no_devices_body">Geräte, die du in den Bluetooth-Einstellungen von Android koppelst, erscheinen hier.</string>
     <string name="open_bt_settings">Bluetooth-Einstellungen öffnen</string>
-    <string name="dev_wake">DevWake</string>
-    <string name="dev_wake_switch">Während ein Debug-Build auf dem Bildschirm ist</string>
-    <string name="dev_wake_footer">Hält den Bildschirm an, während du Apps testest, die du entwickelst (jede als debuggable markierte App). Nutzt den Nutzungszugriff, wie AppWake.</string>
     <string name="schedule_wake">ScheduleWake</string>
     <string name="schedule_wake_switch">Zu festgelegten Zeiten</string>
     <string name="schedule_wake_sub">Den Bildschirm in den Zeitfenstern unten anlassen</string>

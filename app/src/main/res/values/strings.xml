@@ -62,7 +62,6 @@
     <string name="reason_app">app on screen</string>
     <string name="reason_charging">charging</string>
     <string name="reason_bluetooth">Bluetooth device</string>
-    <string name="reason_debug">debug build on screen</string>
     <string name="reason_schedule">schedule</string>
     <string name="reason_schedule_until">schedule (until %1$s)</string>
     <string name="reason_media">media playing</string>
@@ -95,9 +94,6 @@
     <string name="no_devices">No paired devices</string>
     <string name="no_devices_body">Devices you pair in Android\'s Bluetooth settings show up here.</string>
     <string name="open_bt_settings">Open Bluetooth settings</string>
-    <string name="dev_wake">DevWake</string>
-    <string name="dev_wake_switch">While a debug build is on screen</string>
-    <string name="dev_wake_footer">Keeps the screen on while you test apps you\'re developing (any app marked debuggable). Uses Usage access, like AppWake.</string>
     <string name="schedule_wake">ScheduleWake</string>
     <string name="schedule_wake_switch">During set hours</string>
     <string name="schedule_wake_sub">Keep the screen on in the time windows below</string>

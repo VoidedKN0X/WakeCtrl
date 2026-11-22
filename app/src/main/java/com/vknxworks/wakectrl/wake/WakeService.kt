@@ -18,7 +18,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ApplicationInfo
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.hardware.Sensor
@@ -59,7 +58,7 @@ import java.util.Date
 
 /**
  * Keeps the screen on, manually or when an automation matches, and watches for those automations
- * (app on screen, charging, Bluetooth device, debug build). Runs as a foreground service, only while
+ * (app on screen, charging, Bluetooth device, schedule, media, dock, headset). Runs as a foreground service, only while
  * WakeCtrl is holding the screen or an automation is switched on. Nothing here touches the network.
  */
 class WakeService : Service() {
@@ -265,7 +264,7 @@ class WakeService : Service() {
     }
 
     /**
-     * Looks at the automations again and again: every 2 seconds while the screen is on and AppWake or DevWake
+     * Looks at the automations again and again: every 2 seconds while the screen is on and AppWake
      * has to notice the app on screen changing, every 15 seconds otherwise, and in any case right when the timer
      * or the current schedule window ends ([PollRule]). Charging, Bluetooth, the schedule alarm and settings
      * changes come in by themselves; turning the screen on starts this again at once.
@@ -316,10 +315,10 @@ class WakeService : Service() {
         )
     }
 
-    /** AppWake (with apps chosen) or DevWake is on: the app on screen has to be watched closely. */
+    /** AppWake is on with apps chosen: the app on screen has to be watched closely. */
     private fun watchesApps(): Boolean {
         val s = container.settings.settings.value
-        return (s.appWake && s.appWakePackages.isNotEmpty()) || s.devWake
+        return s.appWake && s.appWakePackages.isNotEmpty()
     }
 
     /** Works out whether to hold the screen, and why; applies it; stops when there's nothing to do. */
@@ -341,7 +340,7 @@ class WakeService : Service() {
 
         val pm = getSystemService(PowerManager::class.java)
         val interactive = pm.isInteractive
-        if (interactive && ((s.appWake && s.appWakePackages.isNotEmpty()) || s.devWake)) updateForegroundApp()
+        if (interactive && s.appWake && s.appWakePackages.isNotEmpty()) updateForegroundApp()
 
         val reasons = mutableSetOf<Reason>()
         if (manualOn) reasons += Reason.MANUAL
@@ -388,7 +387,6 @@ class WakeService : Service() {
                     ActivityLog.add(getString(R.string.log_app_timer_done, labelOf(fg), minutesText(this, limit)))
                 }
             }
-            if (s.devWake && isDebuggable(fg)) { reasons += Reason.DEBUG_APP; trigger = fg }
         }
 
         // Low battery: let go, and leave automations alone until the phone charges.
@@ -635,10 +633,6 @@ class WakeService : Service() {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
     }.getOrDefault(pkg)
 
-    private fun isDebuggable(pkg: String): Boolean = runCatching {
-        packageManager.getApplicationInfo(pkg, 0).flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-    }.getOrDefault(false)
-
     private fun loadConnectedBluetooth() {
         if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) return
         val adapter = getSystemService(BluetoothManager::class.java)?.adapter ?: return
@@ -668,7 +662,6 @@ class WakeService : Service() {
                 Reason.APP -> R.string.reason_app
                 Reason.CHARGING -> R.string.reason_charging
                 Reason.BLUETOOTH -> R.string.reason_bluetooth
-                Reason.DEBUG_APP -> R.string.reason_debug
                 Reason.SCHEDULE -> R.string.reason_schedule
                 Reason.MEDIA -> R.string.reason_media
                 Reason.DOCK -> R.string.reason_dock

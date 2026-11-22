@@ -14,7 +14,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Why the screen is being kept on. */
-enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, DEBUG_APP, SCHEDULE, MEDIA, DOCK, HEADSET }
+enum class Reason { MANUAL, APP, CHARGING, BLUETOOTH, SCHEDULE, MEDIA, DOCK, HEADSET }
 
 data class WakeStatus(
     /** The service is running (keeping awake or watching for an automation). */
@@ -26,7 +26,7 @@ data class WakeStatus(
     val method: Method? = null,
     /** Stood down because the battery got low; automations wait until the phone charges. */
     val stoodDown: Boolean = false,
-    /** The app on screen that triggered AppWake or DevWake, if any. */
+    /** The app on screen that triggered AppWake, if any. */
     val triggerApp: String? = null,
     /** While a Schedule window keeps the screen on: when it ends (epoch ms), or 0. */
     val scheduleUntil: Long = 0L,
@@ -54,7 +54,7 @@ object WakeState {
 }
 
 /**
- * A small local log of what WakeCtrl did and why (the original app's "debug logs"). Kept in the app's
+ * A small local log of what WakeCtrl did and why (Settings > Activity log). Kept in the app's
  * private storage, last 300 lines, never sent anywhere.
  *
  * The file (`filesDir/activity.log`) is encrypted at rest ([SealedFile]) under the app's data key

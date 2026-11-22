@@ -56,7 +56,6 @@
     <string name="reason_app">appli à l\'écran</string>
     <string name="reason_charging">en charge</string>
     <string name="reason_bluetooth">appareil Bluetooth</string>
-    <string name="reason_debug">version de débogage à l\'écran</string>
     <string name="reason_schedule">horaire</string>
     <string name="reason_schedule_until">horaire (jusqu\'à %1$s)</string>
     <string name="reason_media">média en lecture</string>
@@ -87,9 +86,6 @@
     <string name="no_devices">Aucun appareil associé</string>
     <string name="no_devices_body">Les appareils associés dans les paramètres Bluetooth d\'Android apparaissent ici.</string>
     <string name="open_bt_settings">Ouvrir les paramètres Bluetooth</string>
-    <string name="dev_wake">DevWake</string>
-    <string name="dev_wake_switch">Pendant qu\'une version de débogage est à l\'écran</string>
-    <string name="dev_wake_footer">Garde l\'écran allumé pendant que vous testez les applis que vous développez (toute appli marquée debuggable). Utilise l\'accès aux données d\'utilisation, comme AppWake.</string>
     <string name="schedule_wake">ScheduleWake</string>
     <string name="schedule_wake_switch">Pendant des heures définies</string>
     <string name="schedule_wake_sub">Garder l\'écran allumé pendant les plages horaires ci-dessous</string>
